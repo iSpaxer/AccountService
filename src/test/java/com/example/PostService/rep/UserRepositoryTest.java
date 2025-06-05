@@ -1,9 +1,6 @@
 package com.example.PostService.rep;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.example.PostService.entity.User;
-import com.example.PostService.rep.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,9 +3,7 @@ package com.example.PostService.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
@@ -22,26 +20,28 @@ public abstract class AbstractEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    protected Long id;
 
     @Column(nullable = false)
     @Enumerated(STRING)
-    private StatusType status = StatusType.ACTIVE;
+    protected StatusType status = StatusType.ACTIVE;
 
     @CreatedDate
     @Column(name = "created_date", updatable = false, nullable = false)
-    private LocalDateTime createdDate;
+    protected LocalDateTime createdDate;
 
     @LastModifiedDate
-    private LocalDateTime lastUpdateDate;
+    protected LocalDateTime lastUpdateDate;
 
 
     @Column(name = "deleted_date")
-    private LocalDateTime deletedDate;
+    protected LocalDateTime deletedDate;
 
     public boolean isActive() {
         return status != StatusType.DELETED;
     }
+
+    public void setVersion(){}
 
     @Override
     public boolean equals(Object o) {

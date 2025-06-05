@@ -1,25 +1,32 @@
 package com.example.PostService.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
 
 @Entity(name = "users")
 @Table(name = "users")
+@Builder @AllArgsConstructor
 @Getter @Setter @NoArgsConstructor
-@SQLRestriction("status <> 'DELETED'")
-@SQLDelete(sql = "UPDATE users SET status = 'DELETED' WHERE id = ?")
+@EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {
+
+    @Version
+    private Long version;
 
     @Column(unique = true)
     private String username;
 
+    @Column(nullable = false)
+    private String password;
+
     @OneToMany(mappedBy = "user")
     private List<Post> posts;
 
+    public User(Long id, String username) {
+        this.id = id;
+        this.username = username;
+    }
 }
