@@ -1,11 +1,12 @@
 package com.example.PostService.dto;
 
-import com.example.PostService.entity.Post;
 import com.example.PostService.entity.StatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,5 +26,7 @@ public class UserDto extends AbstractDto {
                 this.lastUpdateDate = lastUpdateDate;
                 this.username = username;
         }
+
+
 
 }

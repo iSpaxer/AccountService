@@ -1,6 +1,7 @@
 package com.example.PostService.dto;
 
 import com.example.PostService.entity.StatusType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -10,15 +11,22 @@ import java.util.Objects;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class AbstractDto {
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        Long id;
+        protected Long id;
+        @JsonIgnore
+        protected StatusType status;
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        StatusType status;
+        protected LocalDateTime createDate;
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        LocalDateTime createDate;
-        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        LocalDateTime lastUpdateDate;
-        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        LocalDateTime deletedDate;
+        protected LocalDateTime lastUpdateDate;
+        @JsonIgnore
+        protected LocalDateTime deletedDate;
+
+        public AbstractDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+                this.id = id;
+                this.status = status;
+                this.createDate = createDate;
+                this.lastUpdateDate = lastUpdateDate;
+        }
 
         @Override
         public boolean equals(Object o) {

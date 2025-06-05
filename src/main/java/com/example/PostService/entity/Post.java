@@ -1,21 +1,28 @@
 package com.example.PostService.entity;
 
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 
-@NoArgsConstructor
 @Entity(name = "posts")
 @Table(name = "posts")
-@SQLRestriction("StatusType <> 'DELETED'")
-@SQLDelete(sql = "UPDATE users SET status = 'DELETED' WHERE id = ?")
+@Builder @AllArgsConstructor
+@Getter @Setter @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Post extends AbstractEntity {
+
+    @Version
+    private Long version;
 
     @Column(nullable = false)
     String message;
-    @ManyToOne()
+
+    @ManyToOne(fetch = FetchType.LAZY)
     User user;
 
+    public Post(Long id, String message) {
+        this.id = id;
+        this.message = message;
+    }
 }

@@ -22,6 +22,9 @@ public abstract class AbstractEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     protected Long id;
 
+    @Version
+    protected Long version;
+
     @Column(nullable = false)
     @Enumerated(STRING)
     protected StatusType status = StatusType.ACTIVE;
@@ -40,8 +43,6 @@ public abstract class AbstractEntity implements Serializable {
     public boolean isActive() {
         return status != StatusType.DELETED;
     }
-
-    public void setVersion(){}
 
     @Override
     public boolean equals(Object o) {

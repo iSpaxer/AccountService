@@ -1,7 +1,8 @@
 package com.example.PostService.util;
 
-import com.example.PostService.dto.AbstractDto;
+import com.example.PostService.dto.PostDto;
 import com.example.PostService.dto.UserDto;
+import com.example.PostService.entity.Post;
 import com.example.PostService.entity.User;
 
 public interface EntityMapper {
@@ -24,5 +25,23 @@ public interface EntityMapper {
 
     default User map(User entity, UserDto dto) {
         return null;
+    }
+
+    // --------------------------
+
+    default PostDto mapToDto(Post entity) {
+        return new PostDto(
+                entity.getId(),
+                entity.getMessage(),
+                entity.getCreatedDate(),
+                entity.getLastUpdateDate()
+        );
+    }
+
+    default Post mapToEntity(PostDto dto) {
+        return new Post(
+                dto.getId(),
+                dto.getMessage()
+        );
     }
 }

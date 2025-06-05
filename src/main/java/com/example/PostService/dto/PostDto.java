@@ -1,11 +1,38 @@
 package com.example.PostService.dto;
 
 import com.example.PostService.entity.User;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record PostDto(
-        @JsonUnwrapped AbstractDto base,
-        String message,
-        User user
-) {
+import java.time.LocalDateTime;
+
+
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+public class PostDto extends AbstractDto {
+    private String message;
+    @JsonIgnore
+    private User user;
+
+    public PostDto(Long id, String message, LocalDateTime createdDate, LocalDateTime lastUpdateDate) {
+        this.id = id;
+        this.message = message;
+        this.createDate = createdDate;
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    @Override
+    @JsonProperty(access = JsonProperty.Access.AUTO)
+    public LocalDateTime getCreateDate() {
+        return super.getCreateDate();
+    }
+
+    @Override
+    @JsonProperty(access = JsonProperty.Access.AUTO)
+    public LocalDateTime getLastUpdateDate() {
+        return super.getLastUpdateDate();
+    }
 }
