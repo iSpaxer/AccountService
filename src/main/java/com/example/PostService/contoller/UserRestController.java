@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -64,7 +65,6 @@ public class UserRestController {
                 )
         );
     }
-
 
 
     @PutMapping("/{id}")
@@ -119,7 +119,29 @@ public class UserRestController {
                 .body(mapper.mapToDto(postRepository.save(post)));
     }
 
+    @GetMapping("/{id}/posts")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<List<PostDto>> getPosts(@PathVariable Long id) {
+        // todo если пользователя не существует нужно выкинуть notfound
+        return ResponseEntity.ok().body(mapper.mapToDto(postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE)));
+    }
 
+    @PutMapping("/{id}/post")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
+        var post = postRepository.findActiveByIdAndUserId(dto.getId(), id)
+                .orElseThrow(() -> new RuntimeException("Пост не найден!"));
+        mapper.map(post, dto);
+        return ResponseEntity
+                .ok(mapper.mapToDto(postRepository.save(post)));
+    }
+
+    @DeleteMapping("/{id}/post")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id){
+        postRepository.deleteByIdAndUserId(dto.getId(), id);
+        return ResponseEntity.ok().build();
+    }
 
 
 }

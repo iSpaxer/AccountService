@@ -12,9 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Post extends AbstractEntity {
 
-    @Version
-    private Long version;
-
     @Column(nullable = false)
     String message;
 

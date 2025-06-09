@@ -5,6 +5,8 @@ import com.example.PostService.dto.UserDto;
 import com.example.PostService.entity.Post;
 import com.example.PostService.entity.User;
 
+import java.util.List;
+
 public interface EntityMapper {
     default UserDto mapToDto(User entity) {
         return new UserDto(
@@ -23,6 +25,7 @@ public interface EntityMapper {
         );
     }
 
+
     default User map(User entity, UserDto dto) {
         return null;
     }
@@ -38,10 +41,19 @@ public interface EntityMapper {
         );
     }
 
+    List<PostDto> mapToDto(List<Post> entityList);
+
     default Post mapToEntity(PostDto dto) {
         return new Post(
                 dto.getId(),
                 dto.getMessage()
         );
     }
+
+    List<Post> mapToEntity(List<PostDto> dtoList);
+
+    default Post map(Post entity, PostDto dto) {
+        return null;
+    }
+
 }

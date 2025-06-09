@@ -8,29 +8,7 @@ import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
-
-/*
-default UserDto mapToDto(User entity) {
-        return new UserDto(
-            entity.getId(),
-            entity.getStatus(),
-            entity.getCreatedDate(),
-            entity.getLastUpdateDate(),
-            entity.getUsername()
-        );
-    }
-
-    default User mapToEntity(UserDto dto) {
-        return new User(
-                dto.getId(),
-                dto.getUsername()
-        );
-    }
-
-    default User map(User entity, UserDto dto) {
-        return null;
-    }
- */
+import java.util.List;
 
 @Component
 public class ModelMapperExt extends ModelMapper implements EntityMapper {
@@ -48,12 +26,30 @@ public class ModelMapperExt extends ModelMapper implements EntityMapper {
     }
 
     @Override
+    public List<PostDto> mapToDto(List<Post> entityList) {
+        if (entityList == null) return List.of();
+        return entityList.stream().map(this::mapToDto).toList();
+    }
+
+    @Override
     public Post mapToEntity(PostDto dto) {
         return this.map(dto, Post.class);
     }
 
     @Override
+    public List<Post> mapToEntity(List<PostDto> dtoList) {
+        if (dtoList == null) return List.of();
+        return dtoList.stream().map(this::mapToEntity).toList();
+    }
+
+    @Override
     public User map(User entity, UserDto dto) {
+        this.map(dto, entity);
+        return entity;
+    }
+
+    @Override
+    public Post map(Post entity, PostDto dto) {
         this.map(dto, entity);
         return entity;
     }

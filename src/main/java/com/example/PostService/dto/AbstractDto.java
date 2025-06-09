@@ -10,8 +10,14 @@ import java.util.Objects;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class AbstractDto {
-        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
         protected Long id;
+
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        public Long getId() {
+                return id;
+        }
+
         @JsonIgnore
         protected StatusType status;
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
