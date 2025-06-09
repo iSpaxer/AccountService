@@ -28,7 +28,7 @@ public class EntityAnnotationValidator implements ApplicationRunner {
 
             if (AbstractEntity.class.isAssignableFrom(entityClass)) {
                 if (!entityClass.isAnnotationPresent(EntityListeners.class)) {
-                    throw new IllegalStateException(entityClass.getName() + " must have @SQLDelete");
+                    throw new IllegalStateException(entityClass.getName() + " must have @EntityListeners");
                 }
             }
         }

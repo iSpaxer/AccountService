@@ -7,7 +7,9 @@ import com.example.PostService.entity.User;
 import com.example.PostService.rep.PostRepository;
 import com.example.PostService.rep.UserRepository;
 import com.example.PostService.util.EntityMapper;
+import com.example.PostService.util.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +40,12 @@ public class UserRestController {
 
     private Long checkSuchUser(Long id, StatusType status) {
         return userRepository.existsByIdAndStatus(id, status)
-                .orElseThrow(() -> new RuntimeException("Не найден пользователь с id = " + id));
+                .orElseThrow(() -> new NotFoundException(id));
     }
 
     private Long checkSuchUser(Long id) {
         return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Не найден пользователь с id = " + id));
+                .orElseThrow(() -> new NotFoundException(id));
     }
 
     // -------------------------------------
@@ -61,7 +63,7 @@ public class UserRestController {
     public ResponseEntity<UserDto> get(@PathVariable Long id) {
         return ResponseEntity.ok(
                 mapper.mapToDto(userRepository.findActiveById(id)
-                        .orElseThrow(() -> new RuntimeException("Не найден пользователь с id = " + id))
+                        .orElseThrow(() -> new NotFoundException(id))
                 )
         );
     }
@@ -72,7 +74,7 @@ public class UserRestController {
     // todo OptimisticLockException
     public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto dto) {
         var entity = userRepository.findActiveById(id)
-                .orElseThrow(() -> new RuntimeException("Не найден пользователь с id = " + id));
+                .orElseThrow(() -> new NotFoundException(id));
         return ResponseEntity.ok(
                 mapper.mapToDto(userRepository.save(mapper.map(entity, dto))
             )
@@ -86,7 +88,7 @@ public class UserRestController {
         var version = checkSuchUser(id, StatusType.DELETED);
 
         if (userRepository.toggleStatus(id, version, StatusType.ACTIVE) == 0) {
-            throw new RuntimeException("Произошла оптимистичная блокировка");
+            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
         };
         return ResponseEntity.ok().build();
     }
@@ -98,7 +100,7 @@ public class UserRestController {
         var version = checkSuchUser(id);
 
         if (userRepository.toggleStatus(id, version, StatusType.DELETED) == 0) {
-            throw new RuntimeException("Произошла оптимистичная блокировка");
+            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
         };
         return ResponseEntity.ok().build();
     }
@@ -122,15 +124,18 @@ public class UserRestController {
     @GetMapping("/{id}/posts")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<PostDto>> getPosts(@PathVariable Long id) {
-        // todo если пользователя не существует нужно выкинуть notfound
-        return ResponseEntity.ok().body(mapper.mapToDto(postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE)));
+        var listPosts = postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE);
+        if (listPosts.isEmpty()) {
+            throw new NotFoundException("Posts for User by id=" + id + " not found!");
+        }
+        return ResponseEntity.ok().body(mapper.mapToDto(listPosts));
     }
 
     @PutMapping("/{id}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
         var post = postRepository.findActiveByIdAndUserId(dto.getId(), id)
-                .orElseThrow(() -> new RuntimeException("Пост не найден!"));
+                .orElseThrow(() -> new NotFoundException(id));
         mapper.map(post, dto);
         return ResponseEntity
                 .ok(mapper.mapToDto(postRepository.save(post)));
