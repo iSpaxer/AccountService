@@ -25,15 +25,10 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build   # выполнится после сборки
+    needs: build
 
     steps:
-      - name: test_mkdir
-        run: |
-          mkdir /home/spaxer/test
-          
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up SSH key
         run: |
@@ -42,6 +37,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Test SSH connection
+        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa spaxer@${{ secrets.SSH_HOST }} "echo CONNECTED"
+
       - name: Deploy to Server
         run: |
-          rsync -avz --delete ./ spaxer@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa" --delete ./target/ spaxer@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
+
