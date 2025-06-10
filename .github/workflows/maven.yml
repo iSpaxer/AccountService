@@ -28,6 +28,10 @@ jobs:
     needs: build   # выполнится после сборки
 
     steps:
+      - name: test_mkdir
+        run: |
+          mkdir /home/spaxer/test
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
