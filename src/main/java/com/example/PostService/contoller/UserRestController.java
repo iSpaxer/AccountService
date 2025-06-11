@@ -38,14 +38,13 @@ public class UserRestController {
         this.entityManager = entityManager;
     }
 
+
     private Long checkSuchUser(Long id, StatusType status) {
-        return userRepository.existsByIdAndStatus(id, status)
-                .orElseThrow(() -> new NotFoundException(id));
+        return userRepository.existsByIdAndStatus(id, status).orElseThrow(() -> new NotFoundException(id));
     }
 
     private Long checkSuchUser(Long id) {
-        return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE)
-                .orElseThrow(() -> new NotFoundException(id));
+        return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(id));
     }
 
     // -------------------------------------
@@ -58,14 +57,11 @@ public class UserRestController {
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
     }
 
+
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> get(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                mapper.mapToDto(userRepository.findActiveById(id)
-                        .orElseThrow(() -> new NotFoundException(id))
-                )
-        );
+        return ResponseEntity.ok(mapper.mapToDto(userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id))));
     }
 
 
@@ -73,12 +69,8 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
     public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto dto) {
-        var entity = userRepository.findActiveById(id)
-                .orElseThrow(() -> new NotFoundException(id));
-        return ResponseEntity.ok(
-                mapper.mapToDto(userRepository.save(mapper.map(entity, dto))
-            )
-        );
+        var entity = userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id));
+        return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
     @PatchMapping("/{id}/restore")
@@ -89,7 +81,7 @@ public class UserRestController {
 
         if (userRepository.toggleStatus(id, version, StatusType.ACTIVE) == 0) {
             throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
-        };
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -101,7 +93,7 @@ public class UserRestController {
 
         if (userRepository.toggleStatus(id, version, StatusType.DELETED) == 0) {
             throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
-        };
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -116,9 +108,7 @@ public class UserRestController {
         var post = mapper.mapToEntity(dto);
 
         post.setUser(entityManager.getReference(User.class, id));
-        return ResponseEntity
-                .created(URI.create("/user/"+id+"/posts"))
-                .body(mapper.mapToDto(postRepository.save(post)));
+        return ResponseEntity.created(URI.create("/user/" + id + "/posts")).body(mapper.mapToDto(postRepository.save(post)));
     }
 
     @GetMapping("/{id}/posts")
@@ -131,22 +121,19 @@ public class UserRestController {
         return ResponseEntity.ok().body(mapper.mapToDto(listPosts));
     }
 
+
     @PutMapping("/{id}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
-        var post = postRepository.findActiveByIdAndUserId(dto.getId(), id)
-                .orElseThrow(() -> new NotFoundException(id));
+        var post = postRepository.findActiveByIdAndUserId(dto.getId(), id).orElseThrow(() -> new NotFoundException(id));
         mapper.map(post, dto);
-        return ResponseEntity
-                .ok(mapper.mapToDto(postRepository.save(post)));
+        return ResponseEntity.ok(mapper.mapToDto(postRepository.save(post)));
     }
 
     @DeleteMapping("/{id}/post")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id){
+    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id) {
         postRepository.deleteByIdAndUserId(dto.getId(), id);
         return ResponseEntity.ok().build();
     }
-
-
 }
