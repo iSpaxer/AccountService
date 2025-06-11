@@ -1,4 +1,12 @@
 services:
+  auth:
+    image: auth-service:latest
+    env_file:
+      - postgres.env
+    ports:
+      - "8080:8080"
+    restart: always
+
   postgres:
     image: postgres:16.1
     container_name: postservice-postgres
