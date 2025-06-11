@@ -1,5 +1,9 @@
 services:
   auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-service
     image: auth-service:latest
     env_file:
       - postgres.env
