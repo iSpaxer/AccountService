@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+
+      - name: Install Release Please
+        run: npm install -g release-please
+
+      - name: Generate release pull request
+        run: |
+          release-please release-pr \
+            --token="${{ secrets.GITHUB_TOKEN }}" \
+            --package-name="AuthenticationService" \
+            --path="." \
+            --release-type="java-maven" \
+            --bump-minor-pre-major
