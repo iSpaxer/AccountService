@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Release with Release Please
-        uses: google-github-actions/release-please-action@v4
+      - name: Release
+        uses: googleapis/release-please-action@v4
         with:
           release-type: maven
           token: ${{ secrets.GITHUB_TOKEN }}
