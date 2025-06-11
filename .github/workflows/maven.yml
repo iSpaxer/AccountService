@@ -3,6 +3,8 @@ name: Build and Deploy with Dockerfile
 on:
   push:
     branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
 
 jobs:
   build-and-deploy:
