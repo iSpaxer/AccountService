@@ -58,14 +58,14 @@ public class UserRestController {
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> get(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.mapToDto(userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id))));
     }
 
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
     public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto dto) {
@@ -73,7 +73,7 @@ public class UserRestController {
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
-    @PatchMapping("/{id}/restore")
+    @PatchMapping("/{id:[1-9]\\d*}/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public ResponseEntity<?> restore(@PathVariable Long id) {
@@ -85,7 +85,7 @@ public class UserRestController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public ResponseEntity<?> deleteSoft(@PathVariable Long id) {
@@ -101,7 +101,7 @@ public class UserRestController {
     // Post
     // -------------------------------------
 
-    @PostMapping("/{id}/post/create")
+    @PostMapping("/{id:[1-9]\\d*}/post/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createPost(@RequestBody PostDto dto, @PathVariable Long id) {
         checkSuchUser(id);
@@ -111,7 +111,7 @@ public class UserRestController {
         return ResponseEntity.created(URI.create("/user/" + id + "/posts")).body(mapper.mapToDto(postRepository.save(post)));
     }
 
-    @GetMapping("/{id}/posts")
+    @GetMapping("/{id:[1-9]\\d*}/posts")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<PostDto>> getPosts(@PathVariable Long id) {
         var listPosts = postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE);
@@ -122,7 +122,7 @@ public class UserRestController {
     }
 
 
-    @PutMapping("/{id}/post")
+    @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
         var post = postRepository.findActiveByIdAndUserId(dto.getId(), id).orElseThrow(() -> new NotFoundException(id));
@@ -130,7 +130,7 @@ public class UserRestController {
         return ResponseEntity.ok(mapper.mapToDto(postRepository.save(post)));
     }
 
-    @DeleteMapping("/{id}/post")
+    @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id) {
         postRepository.deleteByIdAndUserId(dto.getId(), id);

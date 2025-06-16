@@ -4,14 +4,16 @@ import com.example.PostService.dto.ExceptionBody;
 import com.example.PostService.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.OptimisticLockException;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -20,14 +22,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RestControllerAdvice {
 
-    @ApiResponse(responseCode = "404")
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ExceptionBody> handleResourceNotFound(NotFoundException e) {
-        var body = new ExceptionBody(e.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(body);
-    }
 
     @ApiResponse(responseCode = "400")
     @ExceptionHandler(OptimisticLockException.class)
@@ -60,6 +54,32 @@ public class RestControllerAdvice {
         var body = new ExceptionBody("Validation failed", errors);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(body);
+    }
+
+    @ApiResponse(responseCode = "404")
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ExceptionBody> handleNotFound(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ExceptionBody("Route not found: " + ex.getResourcePath()));
+    }
+
+
+    @ApiResponse(responseCode = "404")
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ExceptionBody> handleResourceNotFound(NotFoundException e) {
+        var body = new ExceptionBody(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(body);
+    }
+
+    @ApiResponse(responseCode = "405")
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ExceptionBody> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        var body = new ExceptionBody(ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(body);
     }
 
