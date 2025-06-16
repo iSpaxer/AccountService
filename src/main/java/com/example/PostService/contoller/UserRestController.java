@@ -13,6 +13,8 @@ import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,7 @@ public class UserRestController {
     private final PostRepository postRepository;
     private final EntityMapper mapper;
     private final EntityManager entityManager;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserRestController(UserRepository userRepository, PostRepository postRepository, EntityMapper mapper, EntityManager entityManager) {
@@ -36,6 +39,7 @@ public class UserRestController {
         this.postRepository = postRepository;
         this.mapper = mapper;
         this.entityManager = entityManager;
+        this.passwordEncoder = null;
     }
 
 
@@ -53,8 +57,20 @@ public class UserRestController {
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserDto> create(@RequestBody UserDto dto) {
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         var user = userRepository.save(mapper.mapToEntity(dto));
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
+    }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> login(@RequestBody UserDto dto) {
+        var user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new AccessDeniedException("Not mathes password");
+        }
+        return ResponseEntity.ok().build();
     }
 
 
