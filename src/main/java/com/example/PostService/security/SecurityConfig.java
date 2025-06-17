@@ -7,10 +7,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 
@@ -22,10 +20,10 @@ public class SecurityConfig {
         return "/api/" + version + s;
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     @Order(1)
@@ -35,9 +33,9 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET, VESION_API("{id:[1-9]\\d*}/post")).permitAll()
-                        .requestMatchers(VESION_API("login"), VESION_API("/create")).anonymous()
-                        .requestMatchers(VESION_API("{id:[1-9]\\d*}/**")).authenticated()
+                        .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/post")).permitAll()
+                        .requestMatchers(VESION_API("/user/create")).anonymous()
+                        .requestMatchers(VESION_API("/user/{id:[1-9]\\d*}/**")).authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(AbstractHttpConfigurer::disable);
@@ -70,17 +68,6 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(AbstractHttpConfigurer::disable);
         return http.build();
-    }
-
-
-    @Bean
-    public UserDetailsService users() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
     }
 
 }

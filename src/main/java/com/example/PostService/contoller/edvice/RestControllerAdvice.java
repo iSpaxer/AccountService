@@ -1,12 +1,14 @@
 package com.example.PostService.contoller.edvice;
 
 import com.example.PostService.dto.ExceptionBody;
+import com.example.PostService.util.exception.BusinessException;
 import com.example.PostService.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +19,9 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
+
+import static com.example.PostService.util.StaticUtilsStr.POST_USER_CONSTRAINT;
+import static com.example.PostService.util.StaticUtilsStr.USERNAME_CONSTRAINT;
 
 @org.springframework.web.bind.annotation.RestControllerAdvice
 @Slf4j
@@ -81,6 +86,33 @@ public class RestControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(body);
+    }
+
+    @ApiResponse(responseCode = "409")
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleConflict(DataIntegrityViolationException ex) {
+        String message;
+        var dbMessage = ex.getMessage();
+        if (dbMessage == null) {
+            message = "Database constraint violation.";
+        } else if (USERNAME_CONSTRAINT.matcher(dbMessage).find()) {
+            message = "A user with this username already exists.";
+        } else if (POST_USER_CONSTRAINT.matcher(dbMessage).find()) {
+            message = "User for this post was not found.";
+        } else {
+            message = "Database constraint violation.";
+            ex.printStackTrace();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ExceptionBody(message));
+    }
+
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<?> handleBusinessException(BusinessException ex) {
+        return ex.getResponseEntity();
     }
 
     @ExceptionHandler(Exception.class)
