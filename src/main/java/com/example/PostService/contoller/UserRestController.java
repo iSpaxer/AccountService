@@ -36,12 +36,12 @@ public class UserRestController {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserRestController(UserRepository userRepository, PostRepository postRepository, EntityMapper mapper, EntityManager entityManager) {
+    public UserRestController(UserRepository userRepository, PostRepository postRepository, EntityMapper mapper, EntityManager entityManager, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.mapper = mapper;
         this.entityManager = entityManager;
-        this.passwordEncoder = null;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -61,6 +61,7 @@ public class UserRestController {
     public ResponseEntity<UserDto> create(@RequestBody UserDto dto) {
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         var user = userRepository.save(mapper.mapToEntity(dto));
+
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
     }
 
