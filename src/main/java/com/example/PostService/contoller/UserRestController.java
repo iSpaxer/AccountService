@@ -8,6 +8,7 @@ import com.example.PostService.rep.PostRepository;
 import com.example.PostService.rep.UserRepository;
 import com.example.PostService.util.EntityMapper;
 import com.example.PostService.util.exception.NotFoundException;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
+@SecurityRequirement(name = "basicAuth")
 @Validated
 public class UserRestController {
 
