@@ -1,6 +1,6 @@
 spring:
   config:
-    import: optional:file:postgres-dev.env[.properties]
+    import: optional:file:dev.env[.properties]
 
   application:
     name: PostService
