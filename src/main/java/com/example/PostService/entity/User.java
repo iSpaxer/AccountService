@@ -10,8 +10,11 @@ import java.util.Objects;
 
 @Entity(name = "users")
 @Table(name = "users")
-@Builder @AllArgsConstructor
-@Getter @Setter @NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {
 
@@ -31,6 +34,11 @@ public class User extends AbstractEntity {
         postList.add(post);
     }
 
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public User(Long id, String username) {
         this.id = id;
         this.username = username;
@@ -40,7 +48,7 @@ public class User extends AbstractEntity {
         super();
     }
 
-    public URI getURI(){
+    public URI getURI() {
         return URI.create("/user/" + id);
     }
 }
