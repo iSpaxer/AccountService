@@ -1,6 +1,7 @@
 package com.example.configuration;
 
 import com.example.dto.LoginRequest;
+import com.example.util.ApplicationDataComponent;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -37,7 +38,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi adminGroup() {
+    public GroupedOpenApi adminGroup(ApplicationDataComponent dataComponent) {
         GroupedOpenApi.Builder builder = GroupedOpenApi.builder();
         builder.group("admin_panel");
         builder.addOpenApiCustomizer(openApi -> {
@@ -45,7 +46,7 @@ public class SwaggerConfig {
                     .forEach(openApi.getComponents()::addSchemas);
 
             openApi
-                    .path("/api/jwt/login", new PathItem()
+                    .path(dataComponent.glueEndpoints("/jwt/login"), new PathItem()
                             .post(new Operation()
                                     .summary("Вход в админ панель.")
                                     .addTagsItem("Admin")
@@ -68,7 +69,7 @@ public class SwaggerConfig {
                                                     .description("INNER SERVER ERROR"))
                                     )
                             ))
-                    .path("/api/jwt/refresh", new PathItem()
+                    .path(dataComponent.glueEndpoints("/jwt/refresh"), new PathItem()
                             .post(new Operation()
                                     .summary("Получить новый access и refresh токен.")
                                     .addTagsItem("Admin")

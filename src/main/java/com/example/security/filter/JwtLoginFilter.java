@@ -2,14 +2,12 @@ package com.example.security.filter;
 
 import com.example.dto.jwt.JwtResponse;
 import com.example.security.converter.CustomAuthenticationConverter;
+import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,18 +25,22 @@ import java.util.function.Function;
  * Фильтр для аутификации пользователя по {email: ..; password: ..;}
  * Фильтр не пропускает запрос в сервлет, отдает ответ сам.
  */
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class JwtLoginFilter extends OncePerRequestFilter {
 
-    DaoAuthenticationProvider daoAuthenticationProvider;
-
-    Function<Authentication, JwtResponse> authenticationJwtResponseMapper;
+    private final ApplicationDataComponent dataComponent;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final Function<Authentication, JwtResponse> authenticationJwtResponseMapper;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    // todo потом нужно удалить)
-    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/api/jwt/login", HttpMethod.POST.name());
+    private final RequestMatcher requestMatcher;
+
+    public JwtLoginFilter(ApplicationDataComponent dataComponent, DaoAuthenticationProvider daoAuthenticationProvider, Function<Authentication, JwtResponse> authenticationJwtResponseMapper) {
+        this.dataComponent = dataComponent;
+        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.authenticationJwtResponseMapper = authenticationJwtResponseMapper;
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoints("/jwt/login"), HttpMethod.POST.name());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {

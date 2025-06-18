@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v" + "${app.version}" + "/user")
+@RequestMapping("/api" + "/v${app.version}" + "/user")
 @Validated
 public class UserRestController {
 

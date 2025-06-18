@@ -9,6 +9,7 @@ import com.example.security.filter.JwtExceptionHandlerFilter;
 import com.example.security.filter.JwtLoginFilter;
 import com.example.security.filter.JwtRefreshFilter;
 import com.example.security.jwt.factory.AuthenticationJwtResponseMapper;
+import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
@@ -37,7 +38,7 @@ import java.util.function.Function;
  */
 @Builder
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true) //todo убрать
 public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthenticationConfigurer, HttpSecurity> {
     JwtUserDetailsService userDetailsService;
     PasswordEncoder passwordEncoder;
@@ -54,7 +55,7 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
 
     HandlerExceptionResolver handlerExceptionResolver;
     ObjectMapper objectMapper;
-
+    ApplicationDataComponent applicationDataComponent;
 
     @Override
     public void configure(HttpSecurity builder) {
@@ -63,6 +64,7 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
 
         var jwtLoginFilter = new JwtLoginFilter(
+                applicationDataComponent,
                 daoAuthenticationProvider,
                 AuthenticationJwtResponseMapper.builder()
                         .jwtRefreshFactory(jwtRefreshFactory)
@@ -73,6 +75,7 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         );
 
         var jwtRefreshFilter = new JwtRefreshFilter(
+                applicationDataComponent,
                 refreshTokenDeserializer,
                 jwtAccessFactory,
                 accessTokenSerializer,
