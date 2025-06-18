@@ -30,6 +30,7 @@
         <java.version>17</java.version>
         <springdoc.version>2.8.8</springdoc.version>
         <modelmapper.version>3.2.3</modelmapper.version>
+        <nimbusds.version>9.40</nimbusds.version>
     </properties>
     <dependencies>
         <dependency>
@@ -51,6 +52,13 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbusds.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

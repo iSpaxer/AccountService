@@ -1,6 +1,7 @@
-package com.example.PostService.security;
+package com.example.PostService.configuration;
 
-import com.example.PostService.configuration.JwtAuthenticationConfigurer;
+
+import com.example.PostService.security.JwtUserDetailsService;
 import com.example.PostService.security.jwt.deserializer.AccessTokenJwsDeserializer;
 import com.example.PostService.security.jwt.deserializer.RefreshTokenJweDeserializer;
 import com.example.PostService.security.jwt.factory.DefaultJwtAccessTokenFactory;
@@ -16,13 +17,9 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,18 +28,16 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.text.ParseException;
 
-
-@Configuration
-public class SecurityConfig {
-
-    private static String VESION_API(String s) {
-        var version = "v1";
-        return "/api/" + version + s;
-    }
+public class SecurityConfiguration {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(7);
     }
 
     @Bean
@@ -69,57 +64,24 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    @Order(1)
-    public SecurityFilterChain chainAPI(HttpSecurity http,
-                                        JwtAuthenticationConfigurer jwtAuthenticationConfigurer) throws Exception {
-        http
-                .apply(jwtAuthenticationConfigurer);
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JwtAuthenticationConfigurer jwtAuthenticationConfigurer
+    ) throws Exception {
+        http.apply(jwtAuthenticationConfigurer);
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .securityMatcher("/api/**")
+                .cors().and()
+                .csrf((csrf) -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/post")).permitAll()
-                        .requestMatchers(VESION_API("/user/create")).anonymous()
-                        .requestMatchers(VESION_API("/user/{id:[1-9]\\d*}/**")).authenticated()
-                )
-                .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .requestMatchers("/api/user/**", "/api/close").authenticated()
 
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
-    public SecurityFilterChain chainAdmin(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .securityMatcher(VESION_API("/admin/**"))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(VESION_API("/admin/**")).hasRole("ADMIN")
-                )
-                .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        return http.build();
-    }
-
-    @Bean
-    @Order(3)
-    public SecurityFilterChain chainDefault(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/**").permitAll()
+                        .anyRequest().denyAll()        // Требуем аутентификацию для остальных запросов
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         return http.build();
     }
 
