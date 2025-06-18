@@ -40,7 +40,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi adminGroup(ApplicationDataComponent dataComponent) {
         GroupedOpenApi.Builder builder = GroupedOpenApi.builder();
-        builder.group("admin_panel");
+        builder.group("Common panel");
         builder.addOpenApiCustomizer(openApi -> {
             ModelConverters.getInstance().read(LoginRequest.class)
                     .forEach(openApi.getComponents()::addSchemas);
