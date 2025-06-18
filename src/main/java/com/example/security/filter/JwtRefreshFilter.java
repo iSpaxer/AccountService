@@ -5,6 +5,7 @@ import com.example.dto.jwt.JwtToken;
 import com.example.security.converter.RefreshJwtConverter;
 import com.example.security.jwt.factory.DefaultJwtRefreshTokenFactory;
 import com.example.security.jwt.util.GiveAwayRefreshToken;
+import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.JsonParseException;
 import jakarta.servlet.FilterChain;
@@ -12,9 +13,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,22 +25,26 @@ import java.time.Instant;
 import java.util.function.Function;
 
 
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class JwtRefreshFilter extends OncePerRequestFilter {
 
-    Function<String, JwtToken> refreshDeserializer;
-    Function<JwtToken, JwtToken> jwtAccessFactory;
-    Function<JwtToken, String> accessTokenSerializer;
-    Function<JwtToken, String> refreshTokenSerializer;
+    private final ApplicationDataComponent dataComponent;
+    private final Function<String, JwtToken> refreshDeserializer;
+    private final Function<JwtToken, JwtToken> jwtAccessFactory;
+    private final Function<JwtToken, String> accessTokenSerializer;
+    private final Function<JwtToken, String> refreshTokenSerializer;
+    private final Function<JwtToken, Boolean> giveAwayRefresh = new GiveAwayRefreshToken();
+    private final Function<HttpServletRequest, String> refreshJwtConverter = new RefreshJwtConverter();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RequestMatcher requestMatcher;
 
-    Function<JwtToken, Boolean> giveAwayRefresh = new GiveAwayRefreshToken();
-    Function<HttpServletRequest, String> refreshJwtConverter = new RefreshJwtConverter();
-
-    ObjectMapper objectMapper = new ObjectMapper();
-
-
-    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/api/jwt/refresh", HttpMethod.POST.name());
+    public JwtRefreshFilter(ApplicationDataComponent dataComponent, Function<String, JwtToken> refreshDeserializer, Function<JwtToken, JwtToken> jwtAccessFactory, Function<JwtToken, String> accessTokenSerializer, Function<JwtToken, String> refreshTokenSerializer) {
+        this.dataComponent = dataComponent;
+        this.refreshDeserializer = refreshDeserializer;
+        this.jwtAccessFactory = jwtAccessFactory;
+        this.accessTokenSerializer = accessTokenSerializer;
+        this.refreshTokenSerializer = refreshTokenSerializer;
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoints("/jwt/refresh"), HttpMethod.POST.name());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

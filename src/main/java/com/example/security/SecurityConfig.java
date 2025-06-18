@@ -7,6 +7,7 @@ import com.example.security.jwt.factory.DefaultJwtAccessTokenFactory;
 import com.example.security.jwt.factory.DefaultJwtRefreshTokenFactory;
 import com.example.security.jwt.serializer.AccessTokenJwsSerializer;
 import com.example.security.jwt.serializer.RefreshTokenJweSerializer;
+import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.DirectDecrypter;
@@ -35,11 +36,6 @@ import java.text.ParseException;
 @Configuration
 public class SecurityConfig {
 
-    private static String VESION_API(String s) {
-        var version = "v1";
-        return "/api/" + version + s;
-    }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -52,7 +48,8 @@ public class SecurityConfig {
             JwtUserDetailsService jwtUserDetailsService,
             PasswordEncoder passwordEncoder,
             HandlerExceptionResolver handlerExceptionResolver,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            ApplicationDataComponent applicationDataComponent
     ) throws ParseException, JOSEException {
         return new JwtAuthenticationConfigurer(
                 jwtUserDetailsService,
@@ -64,7 +61,8 @@ public class SecurityConfig {
                 new AccessTokenJwsDeserializer(new MACVerifier(OctetSequenceKey.parse(accessTokenKey))),
                 new RefreshTokenJweDeserializer(new DirectDecrypter(OctetSequenceKey.parse(refreshTokenKey))),
                 handlerExceptionResolver,
-                objectMapper
+                objectMapper,
+                applicationDataComponent
         );
     }
 
@@ -76,6 +74,7 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain chainAPI(HttpSecurity http,
+                                        ApplicationDataComponent appData,
                                         JwtAuthenticationConfigurer jwtAuthenticationConfigurer) throws Exception {
         http
                 .apply(jwtAuthenticationConfigurer);
@@ -84,10 +83,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET, VESION_API("/user/{id:[1-9]\\d*}/post")).permitAll()
-                        .requestMatchers(VESION_API("/user/create")).anonymous()
-                        .requestMatchers(VESION_API("/user/{id:[1-9]\\d*}/**")).authenticated()
+                        .requestMatchers("/api/info").permitAll()
+                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user/{id:[1-9]\\d*}/**")).permitAll()
+                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user/{id:[1-9]\\d*}/post")).permitAll()
+                        .requestMatchers(appData.glueEndpoints("/user/create")).anonymous()
+                        .requestMatchers(appData.glueEndpoints("/user/{id:[1-9]\\d*}/**")).authenticated()
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -97,12 +97,12 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain chainAdmin(HttpSecurity http) throws Exception {
+    public SecurityFilterChain chainAdmin(HttpSecurity http, ApplicationDataComponent appData) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .securityMatcher(VESION_API("/admin/**"))
+                .securityMatcher(appData.glueEndpoints("/admin/**"))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(VESION_API("/admin/**")).hasRole("ADMIN")
+                        .requestMatchers(appData.glueEndpoints("/admin/**")).hasRole("ADMIN")
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
