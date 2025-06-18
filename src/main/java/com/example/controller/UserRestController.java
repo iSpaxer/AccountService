@@ -24,8 +24,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/user")
-//@SecurityRequirement(name = "JWT")
+@RequestMapping("/api/v" + "${app.version}" + "/user")
 @Validated
 public class UserRestController {
 
@@ -65,18 +64,6 @@ public class UserRestController {
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
     }
 
-//    @PostMapping("/login")
-//    @ResponseStatus(HttpStatus.OK)
-//    public ResponseEntity<?> login(@RequestBody UserDto dto) {
-//        var user = userRepository.findByUsername(dto.getUsername())
-//                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
-//        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-//            throw new AccessDeniedException("Not mathes password");
-//        }
-//        return ResponseEntity.ok().build();
-//    }
-
-
     @GetMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> get(@PathVariable Long id) {
@@ -85,7 +72,7 @@ public class UserRestController {
 
 
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @PutMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
@@ -96,7 +83,7 @@ public class UserRestController {
     }
 
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @PatchMapping("/{id:[1-9]\\d*}/restore")
     @ResponseStatus(HttpStatus.OK)
@@ -111,7 +98,7 @@ public class UserRestController {
     }
 
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @DeleteMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
@@ -128,9 +115,8 @@ public class UserRestController {
     // -------------------------------------
     // Post
     // -------------------------------------
-
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @PostMapping("/{id:[1-9]\\d*}/post/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -153,7 +139,7 @@ public class UserRestController {
     }
 
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
@@ -164,7 +150,7 @@ public class UserRestController {
     }
 
     @Operation(
-            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+            security = {@SecurityRequirement(name = "JWT")}
     )
     @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
