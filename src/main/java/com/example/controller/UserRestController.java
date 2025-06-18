@@ -8,13 +8,13 @@ import com.example.rep.PostRepository;
 import com.example.rep.UserRepository;
 import com.example.util.EntityMapper;
 import com.example.util.exception.NotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -25,7 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
-@SecurityRequirement(name = "basicAuth")
+//@SecurityRequirement(name = "JWT")
 @Validated
 public class UserRestController {
 
@@ -65,16 +65,16 @@ public class UserRestController {
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
     }
 
-    @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> login(@RequestBody UserDto dto) {
-        var user = userRepository.findByUsername(dto.getUsername())
-                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new AccessDeniedException("Not mathes password");
-        }
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/login")
+//    @ResponseStatus(HttpStatus.OK)
+//    public ResponseEntity<?> login(@RequestBody UserDto dto) {
+//        var user = userRepository.findByUsername(dto.getUsername())
+//                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
+//        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+//            throw new AccessDeniedException("Not mathes password");
+//        }
+//        return ResponseEntity.ok().build();
+//    }
 
 
     @GetMapping("/{id:[1-9]\\d*}")
@@ -84,6 +84,9 @@ public class UserRestController {
     }
 
 
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @PutMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
@@ -92,6 +95,9 @@ public class UserRestController {
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @PatchMapping("/{id:[1-9]\\d*}/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
@@ -104,6 +110,9 @@ public class UserRestController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @DeleteMapping("/{id:[1-9]\\d*}")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
@@ -120,6 +129,9 @@ public class UserRestController {
     // Post
     // -------------------------------------
 
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @PostMapping("/{id:[1-9]\\d*}/post/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createPost(@RequestBody PostDto dto, @PathVariable Long id) {
@@ -140,7 +152,9 @@ public class UserRestController {
         return ResponseEntity.ok().body(mapper.mapToDto(listPosts));
     }
 
-
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
@@ -149,6 +163,9 @@ public class UserRestController {
         return ResponseEntity.ok(mapper.mapToDto(postRepository.save(post)));
     }
 
+    @Operation(
+            security = {@SecurityRequirement(name = "JWT")} // <-- вот это добавляет замочек
+    )
     @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id) {
