@@ -28,7 +28,9 @@ spring:
       repositories:
         enabled: true
 
-
+app:
+  version: ${project.version}
+  clean-version: ${project.version.replace('-SNAPSHOT', '')}
 
 jwt:
   access-token-key: ${JWT_ACCESS_KEY}
