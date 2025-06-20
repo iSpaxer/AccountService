@@ -86,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/info").permitAll()
                         .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user", "/user/**")).permitAll()
                         .requestMatchers(appData.glueEndpoints("/user/create", "/user/restore")).anonymous()
-                        .requestMatchers(appData.glueEndpoints("/user/{id:[1-9]\\d*}/**")).authenticated()
+                        .requestMatchers(appData.glueEndpoints("/user", "/user/**")).authenticated()
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

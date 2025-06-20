@@ -24,6 +24,8 @@ public class User extends AbstractEntity {
     @Column(nullable = false)
     private String password;
 
+    private String description;
+
     @OneToMany(mappedBy = "user")
     private List<Post> postList;
 
