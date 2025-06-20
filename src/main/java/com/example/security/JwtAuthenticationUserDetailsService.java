@@ -15,7 +15,7 @@ public class JwtAuthenticationUserDetailsService
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken authenticationToken) throws UsernameNotFoundException {
         if (authenticationToken.getPrincipal() instanceof JwtToken token) {
-            return new TokenAdmin(token.username(), "nopassword", true, true,
+            return new SpringUser(token.username(), "", true, true,
                     token.expiresAt().isAfter(Instant.now()),
                     true,
                     token.authorities().stream()

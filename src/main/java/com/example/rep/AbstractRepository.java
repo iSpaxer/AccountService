@@ -23,7 +23,7 @@ public interface AbstractRepository<T extends AbstractEntity, ID> extends JpaRep
     Optional<T> findDeletedById(Long id);
 
     @Query("""
-            SELECT abstr.version FROM #{#entityName} abstr WHERE abstr.id = :id AND  abstr.status = :status
+            SELECT abstr.version FROM #{#entityName} abstr WHERE abstr.id = :id AND abstr.status = :status
             """)
     Optional<Long> existsByIdAndStatus(Long id, StatusType status);
 

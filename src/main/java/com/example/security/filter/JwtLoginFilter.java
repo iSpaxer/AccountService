@@ -39,7 +39,7 @@ public class JwtLoginFilter extends OncePerRequestFilter {
         this.dataComponent = dataComponent;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.authenticationJwtResponseMapper = authenticationJwtResponseMapper;
-        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoints("/jwt/login"), HttpMethod.POST.name());
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/login"), HttpMethod.POST.name());
     }
 
     @Override

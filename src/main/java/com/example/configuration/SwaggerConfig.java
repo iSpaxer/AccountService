@@ -46,7 +46,7 @@ public class SwaggerConfig {
                     .forEach(openApi.getComponents()::addSchemas);
 
             openApi
-                    .path(dataComponent.glueEndpoints("/jwt/login"), new PathItem()
+                    .path(dataComponent.glueEndpoint("/jwt/login"), new PathItem()
                             .post(new Operation()
                                     .summary("Вход в админ панель.")
                                     .addTagsItem("Admin")
@@ -69,7 +69,7 @@ public class SwaggerConfig {
                                                     .description("INNER SERVER ERROR"))
                                     )
                             ))
-                    .path(dataComponent.glueEndpoints("/jwt/refresh"), new PathItem()
+                    .path(dataComponent.glueEndpoint("/jwt/refresh"), new PathItem()
                             .post(new Operation()
                                     .summary("Получить новый access и refresh токен.")
                                     .addTagsItem("Admin")

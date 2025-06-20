@@ -18,7 +18,7 @@ import java.util.Objects;
 @EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {
 
-    @Column(unique = true)
+    @Column(unique = true, updatable = false)
     private String username;
 
     @Column(nullable = false)

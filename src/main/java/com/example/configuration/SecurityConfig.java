@@ -1,6 +1,6 @@
-package com.example.security;
+package com.example.configuration;
 
-import com.example.configuration.JwtAuthenticationConfigurer;
+import com.example.security.JwtUserDetailsService;
 import com.example.security.jwt.deserializer.AccessTokenJwsDeserializer;
 import com.example.security.jwt.deserializer.RefreshTokenJweDeserializer;
 import com.example.security.jwt.factory.DefaultJwtAccessTokenFactory;
@@ -84,9 +84,8 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/info").permitAll()
-                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user/{id:[1-9]\\d*}/**")).permitAll()
-                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user/{id:[1-9]\\d*}/post")).permitAll()
-                        .requestMatchers(appData.glueEndpoints("/user/create")).anonymous()
+                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user", "/user/**")).permitAll()
+                        .requestMatchers(appData.glueEndpoints("/user/create", "/user/restore")).anonymous()
                         .requestMatchers(appData.glueEndpoints("/user/{id:[1-9]\\d*}/**")).authenticated()
                 )
                 .sessionManagement(sessionManagement ->
