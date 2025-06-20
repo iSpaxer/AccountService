@@ -36,7 +36,6 @@ public class AccessJwtAuthenticationConverter implements AuthenticationConverter
                 return new PreAuthenticatedAuthenticationToken(refreshToken, token);
             }
         }
-//        throw new AccessDeniedException("Отсутсвует access токен");
         return null;
     }
 

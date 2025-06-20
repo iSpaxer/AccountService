@@ -43,7 +43,7 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
         this.jwtAccessFactory = jwtAccessFactory;
         this.accessTokenSerializer = accessTokenSerializer;
         this.refreshTokenSerializer = refreshTokenSerializer;
-        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoints("/jwt/refresh"), HttpMethod.POST.name());
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/refresh"), HttpMethod.POST.name());
     }
 
     @Override

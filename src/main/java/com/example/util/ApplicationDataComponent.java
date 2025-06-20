@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Component
@@ -29,9 +26,18 @@ public class ApplicationDataComponent {
         this.technologies = initTechnologies();
     }
 
-    public String glueEndpoints(String api) {
-        return "/api/v" + this.getBuildProperties().getVersion() + api;
+    public String glueEndpoint(String path) {
+        return "/api/v" + this.getBuildProperties().getVersion() + path;
     }
+
+    public String[] glueEndpoints(String... paths) {
+        return Arrays.stream(paths)
+                .filter(Objects::nonNull)
+                .map(path -> path.trim().replaceAll("/+$", ""))
+                .map(path -> "/api/v" + this.getBuildProperties().getVersion() + path)
+                .toArray(String[]::new);
+    }
+
 
     private List<Map<String, String>> initTechnologies() {
         List<Map<String, String>> techList = new ArrayList<>();

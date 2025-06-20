@@ -2,10 +2,12 @@ package com.example.controller;
 
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
+import com.example.dto.jwt.JwtToken;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.PostRepository;
 import com.example.rep.UserRepository;
+import com.example.security.SpringUser;
 import com.example.util.EntityMapper;
 import com.example.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +17,11 @@ import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -52,6 +59,10 @@ public class UserRestController {
         return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(id));
     }
 
+    private Long checkSuchUser(String username, StatusType status) {
+        return userRepository.existsByUsernameAndStatus(username, status).orElseThrow(() -> new NotFoundException(username));
+    }
+
     // -------------------------------------
     // User
     // -------------------------------------
@@ -64,36 +75,52 @@ public class UserRestController {
         return ResponseEntity.created(user.getURI()).body(mapper.mapToDto(user));
     }
 
-    @GetMapping("/{id:[1-9]\\d*}")
+    @Operation(security = {@SecurityRequirement(name = "JWT")})
+    @GetMapping({"/{id:[1-9]\\d*}", ""})
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDto> get(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.mapToDto(userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id))));
+    public ResponseEntity<UserDto> get(@PathVariable(required = false) Long id) {
+        User user = (id != null)
+                ? userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id))
+                : getAuthenticatedUser();
+
+        return ResponseEntity.ok(mapper.mapToDto(user));
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
+            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+        }
+
+        return userRepository.findActiveByUsername(springUser.getUsername())
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
     }
 
 
-    @Operation(
-            security = {@SecurityRequirement(name = "JWT")}
-    )
-    @PutMapping("/{id:[1-9]\\d*}")
+    @PutMapping
+    @Operation(security = {@SecurityRequirement(name = "JWT")})
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
-    public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto dto) {
-        var entity = userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id));
+    public ResponseEntity<UserDto> update(@RequestBody UserDto dto, @AuthenticationPrincipal JwtToken jwtToken) {
+        var entity = userRepository.findActiveByUsername(jwtToken.username()).orElseThrow(() -> new NotFoundException(jwtToken.username()));
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
-    @Operation(
-            security = {@SecurityRequirement(name = "JWT")}
-    )
-    @PatchMapping("/{id:[1-9]\\d*}/restore")
+
+    @PatchMapping("/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public ResponseEntity<?> restore(@PathVariable Long id) {
-        var version = checkSuchUser(id, StatusType.DELETED);
+    public ResponseEntity<?> restore(@RequestBody UserDto dto) {
+        var user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
 
-        if (userRepository.toggleStatus(id, version, StatusType.ACTIVE) == 0) {
-            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Login or password not valid");
         }
+
+        user.setStatus(StatusType.ACTIVE);
+        userRepository.save(user);
+
         return ResponseEntity.ok().build();
     }
 
