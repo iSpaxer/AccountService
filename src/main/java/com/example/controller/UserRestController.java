@@ -9,6 +9,7 @@ import com.example.rep.PostRepository;
 import com.example.rep.UserRepository;
 import com.example.security.SpringUser;
 import com.example.util.EntityMapper;
+import com.example.util.exception.BadRequestException;
 import com.example.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -154,7 +155,7 @@ public class UserRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.mapToDto(postRepository.save(post)));
     }
 
-    @GetMapping("/{id:[1-9]\\d*}/posts") // todo
+    @GetMapping("/{id:[1-9]\\d*}/posts")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<PostDto>> getPosts(@PathVariable Long id) {
         var listPosts = postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE);
@@ -167,7 +168,7 @@ public class UserRestController {
     @Operation(
             security = {@SecurityRequirement(name = "JWT")}
     )
-    @PutMapping("/{id:[1-9]\\d*}/post")
+    @PutMapping("/{id:[1-9]\\d*}/post") // todo
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
         var post = postRepository.findActiveByIdAndUserId(dto.getId(), springUser.getId()).orElseThrow(() -> new NotFoundException(springUser.getId()));
@@ -180,8 +181,11 @@ public class UserRestController {
     )
     @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
-        postRepository.deleteByIdAndUserId(dto.getId(), springUser.getId());
+    public ResponseEntity<?> deletePost(@PathVariable Long id, @AuthenticationPrincipal SpringUser springUser) {
+        var count = postRepository.deleteByIdAndUserId(id, springUser.getId());
+        if (count == 0) {
+            throw new BadRequestException("Post not found!");
+        }
         return ResponseEntity.ok().build();
     }
 }
