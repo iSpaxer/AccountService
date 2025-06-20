@@ -1,6 +1,7 @@
 package com.example.controller.edvice;
 
 import com.example.dto.ExceptionBody;
+import com.example.util.exception.BadRequestException;
 import com.example.util.exception.BusinessException;
 import com.example.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,6 +63,14 @@ public class RestControllerAdvice {
                 .body(body);
     }
 
+
+    @ApiResponse(responseCode = "401")
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ExceptionBody> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ExceptionBody("Bad request! " + ex.getMessage()));
+    }
+
     @ApiResponse(responseCode = "404")
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ExceptionBody> handleNotFound(NoResourceFoundException ex) {
@@ -115,6 +124,7 @@ public class RestControllerAdvice {
         return ex.getResponseEntity();
     }
 
+    @ApiResponse(responseCode = "500")
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionBody handleCommonException(Exception e) {

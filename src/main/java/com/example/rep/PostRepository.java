@@ -22,5 +22,5 @@ public interface PostRepository extends AbstractRepository<Post, Long> {
     @Transactional
     @Modifying
     @Query("UPDATE #{#entityName} p SET p.status = 'DELETED', p.deletedDate = CURRENT_TIMESTAMP WHERE p.id = :id AND p.user.id = :userId")
-    void deleteByIdAndUserId(Long id, Long userId);
+    Integer deleteByIdAndUserId(Long id, Long userId);
 }
