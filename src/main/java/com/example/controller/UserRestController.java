@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.dto.LoginRequest;
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
 import com.example.entity.StatusType;
@@ -90,7 +91,7 @@ public class UserRestController {
             throw new AuthenticationCredentialsNotFoundException("Unauthorized");
         }
 
-        return userRepository.findActiveByUsername(springUser.getUsername())
+        return userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
                 .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
     }
 
@@ -100,7 +101,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
     public ResponseEntity<UserDto> update(@RequestBody UserDto dto, @AuthenticationPrincipal SpringUser springUser) {
-        var entity = userRepository.findActiveByUsername(springUser.getUsername()).orElseThrow(() -> new NotFoundException(springUser.getUsername()));
+        var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(springUser.getUsername()));
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
@@ -108,9 +109,9 @@ public class UserRestController {
     @PatchMapping("/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public ResponseEntity<?> restore(@RequestBody UserDto dto) {
-        var user = userRepository.findActiveByUsername(dto.getUsername())
-                .orElseThrow(() -> new NotFoundException(dto.getUsername()));
+    public ResponseEntity<?> restore(@RequestBody LoginRequest dto) {
+        var user = userRepository.findByUsernameAndStatus(dto.getUsername(), StatusType.DELETED)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Login or password not valid");
@@ -153,7 +154,7 @@ public class UserRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.mapToDto(postRepository.save(post)));
     }
 
-    @GetMapping("/{id:[1-9]\\d*}/posts")
+    @GetMapping("/{id:[1-9]\\d*}/posts") // todo
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<PostDto>> getPosts(@PathVariable Long id) {
         var listPosts = postRepository.findByUserIdAndStatus(id, StatusType.ACTIVE);
@@ -168,8 +169,8 @@ public class UserRestController {
     )
     @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @PathVariable Long id) {
-        var post = postRepository.findActiveByIdAndUserId(dto.getId(), id).orElseThrow(() -> new NotFoundException(id));
+    public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        var post = postRepository.findActiveByIdAndUserId(dto.getId(), springUser.getId()).orElseThrow(() -> new NotFoundException(springUser.getId()));
         mapper.map(post, dto);
         return ResponseEntity.ok(mapper.mapToDto(postRepository.save(post)));
     }
@@ -179,8 +180,8 @@ public class UserRestController {
     )
     @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @PathVariable Long id) {
-        postRepository.deleteByIdAndUserId(dto.getId(), id);
+    public ResponseEntity<?> deletePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        postRepository.deleteByIdAndUserId(dto.getId(), springUser.getId());
         return ResponseEntity.ok().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.UserRepository;
 import com.example.security.JwtUserDetails;
@@ -17,8 +18,8 @@ public class UserService {
     }
 
     private User findBydUsername(String username) {
-        return repository.findActiveByUsername(username)
-                .orElseThrow(() -> new NotFoundException(username));
+        return repository.findByUsernameAndStatus(username, StatusType.ACTIVE)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 
     public JwtUserDetails getUserDetailsByUsername(String username) {
