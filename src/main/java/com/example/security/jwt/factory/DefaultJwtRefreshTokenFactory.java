@@ -1,6 +1,7 @@
 package com.example.security.jwt.factory;
 
 import com.example.dto.jwt.JwtToken;
+import com.example.security.JwtUserDetails;
 import com.example.security._static.SecureStatic;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +19,12 @@ public class DefaultJwtRefreshTokenFactory implements Function<Authentication, J
 
     @Override
     public JwtToken apply(Authentication authentication) {
+        var principal = authentication.getPrincipal();
+
+        if (!(principal instanceof JwtUserDetails jwtUserDetails)) {
+            throw new IllegalArgumentException("Principal is not an instance of CustomUserDetails");
+        }
+
 
         var authorities = new LinkedList<String>();
         authorities.add("JWT_REFRESH");
@@ -28,7 +35,7 @@ public class DefaultJwtRefreshTokenFactory implements Function<Authentication, J
                 .map(authority -> SecureStatic.PREFIX_FOR_AUTHORITIES + authority)
                 .forEach(authorities::add);
         var now = Instant.now();
-        return new JwtToken(authentication.getName(), authorities, now, now.plus(REFRESH_TOKEN_Ttl));
+        return new JwtToken(jwtUserDetails.getId(), authentication.getName(), authorities, now, now.plus(REFRESH_TOKEN_Ttl));
     }
 
 }

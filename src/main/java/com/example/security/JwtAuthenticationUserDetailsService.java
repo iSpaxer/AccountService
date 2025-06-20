@@ -20,7 +20,8 @@ public class JwtAuthenticationUserDetailsService
                     true,
                     token.authorities().stream()
                             .map(SimpleGrantedAuthority::new)
-                            .toList(), token);
+                            .toList(),
+                    token);
         }
         throw new UsernameNotFoundException("Principal must me of type Token");
     }

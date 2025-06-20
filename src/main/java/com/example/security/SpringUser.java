@@ -6,9 +6,14 @@ import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 
+
 public class SpringUser extends User {
 
     private final JwtToken token;
+
+    public Long getId() {
+        return token.id();
+    }
 
     public SpringUser(String username, String password, Collection<? extends GrantedAuthority> authorities, JwtToken token) {
         super(username, password, authorities);

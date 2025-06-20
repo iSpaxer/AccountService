@@ -24,6 +24,7 @@ public class UserService {
     public JwtUserDetails getUserDetailsByUsername(String username) {
         var user = findBydUsername(username);
         return new JwtUserDetails(
+                user.getId(),
                 user.getUsername(),
                 user.getPassword()
         );

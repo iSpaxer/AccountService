@@ -27,7 +27,9 @@ public class RefreshTokenJweDeserializer implements Function<String, JwtToken> {
             var encryptedJWT = EncryptedJWT.parse(string);
             encryptedJWT.decrypt(this.jweDecrypter);
             var claimsSet = encryptedJWT.getJWTClaimsSet();
-            return new JwtToken(claimsSet.getSubject(),
+            return new JwtToken(
+                    claimsSet.getLongClaim("id"),
+                    claimsSet.getSubject(),
                     claimsSet.getStringListClaim("authorities"),
                     claimsSet.getIssueTime().toInstant(),
                     claimsSet.getExpirationTime().toInstant());

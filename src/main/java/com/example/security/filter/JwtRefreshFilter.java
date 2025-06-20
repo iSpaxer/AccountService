@@ -69,6 +69,7 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
     @NotNull
     private JwtResponse getJwtResponse(JwtToken refreshToken, String refreshTokenStr) {
         var new_refreshToken = new JwtToken(
+                refreshToken.id(),
                 refreshToken.username(),
                 refreshToken.authorities(),
                 Instant.now(), Instant.now().plus(DefaultJwtRefreshTokenFactory.REFRESH_TOKEN_Ttl));
