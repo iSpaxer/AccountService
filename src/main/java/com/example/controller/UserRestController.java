@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -144,14 +143,14 @@ public class UserRestController {
     @Operation(
             security = {@SecurityRequirement(name = "JWT")}
     )
-    @PostMapping("/{id:[1-9]\\d*}/post/create")
+    @PostMapping("/post/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createPost(@RequestBody PostDto dto, @PathVariable Long id) {
-        checkSuchUser(id);
+    public ResponseEntity<?> createPost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        checkSuchUser(springUser.getId());
         var post = mapper.mapToEntity(dto);
 
-        post.setUser(entityManager.getReference(User.class, id));
-        return ResponseEntity.created(URI.create("/user/" + id + "/posts")).body(mapper.mapToDto(postRepository.save(post)));
+        post.setUser(entityManager.getReference(User.class, springUser.getId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.mapToDto(postRepository.save(post)));
     }
 
     @GetMapping("/{id:[1-9]\\d*}/posts")

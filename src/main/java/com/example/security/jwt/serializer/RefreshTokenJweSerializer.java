@@ -39,6 +39,7 @@ public class RefreshTokenJweSerializer implements Function<JwtToken, String> {
                 .issueTime(Date.from(token.createdAt()))
                 .expirationTime(Date.from(token.expiresAt()))
                 .claim("authorities", token.authorities())
+                .claim("id", token.id())
                 .build();
         var encryptedJWT = new EncryptedJWT(jweHeader, jwsClaims);
         try {

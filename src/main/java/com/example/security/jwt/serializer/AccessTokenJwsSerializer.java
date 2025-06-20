@@ -38,6 +38,7 @@ public class AccessTokenJwsSerializer implements Function<JwtToken, String> {
                 .issueTime(Date.from(token.createdAt()))
                 .expirationTime(Date.from(token.expiresAt()))
                 .claim("authorities", token.authorities())
+                .claim("id", token.id())
                 .build();
         var signedJWT = new SignedJWT(jwsHeader, jwsClaims);
         try {

@@ -36,7 +36,8 @@ public class User extends AbstractEntity {
         postList.add(post);
     }
 
-    public User(String username, String password) {
+    public User(Long id, String username, String password) {
+        this.id = id;
         this.username = username;
         this.password = password;
     }
