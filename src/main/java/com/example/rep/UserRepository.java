@@ -10,9 +10,9 @@ import java.util.Optional;
 public interface UserRepository extends AbstractRepository<User, Long> {
 
     @Query("""
-            SELECT user FROM #{#entityName} user WHERE user.username = :username AND  user.status <> 'DELETED'
+            SELECT user FROM #{#entityName} user WHERE user.username = :username AND  user.status = 'DELETED'
             """)
-    Optional<User> findActiveByUsername(String username);
+    Optional<User> findByUsernameAndStatus(String username, StatusType status);
 
     @Query("""
             SELECT user.version FROM #{#entityName} user WHERE user.username = :username AND user.status = :status
