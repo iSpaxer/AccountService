@@ -2,7 +2,6 @@ package com.example.controller;
 
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
-import com.example.dto.jwt.JwtToken;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.PostRepository;
@@ -101,8 +100,8 @@ public class UserRestController {
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
-    public ResponseEntity<UserDto> update(@RequestBody UserDto dto, @AuthenticationPrincipal JwtToken jwtToken) {
-        var entity = userRepository.findActiveByUsername(jwtToken.username()).orElseThrow(() -> new NotFoundException(jwtToken.username()));
+    public ResponseEntity<UserDto> update(@RequestBody UserDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        var entity = userRepository.findActiveByUsername(springUser.getUsername()).orElseThrow(() -> new NotFoundException(springUser.getUsername()));
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
@@ -111,7 +110,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public ResponseEntity<?> restore(@RequestBody UserDto dto) {
-        var user = userRepository.findByUsername(dto.getUsername())
+        var user = userRepository.findActiveByUsername(dto.getUsername())
                 .orElseThrow(() -> new NotFoundException(dto.getUsername()));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
@@ -127,14 +126,14 @@ public class UserRestController {
     @Operation(
             security = {@SecurityRequirement(name = "JWT")}
     )
-    @DeleteMapping("/{id:[1-9]\\d*}")
+    @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public ResponseEntity<?> deleteSoft(@PathVariable Long id) {
-        var version = checkSuchUser(id);
+    public ResponseEntity<?> deleteSoft(@AuthenticationPrincipal SpringUser springUser) {
+        var version = checkSuchUser(springUser.getUsername(), StatusType.ACTIVE);
 
-        if (userRepository.toggleStatus(id, version, StatusType.DELETED) == 0) {
-            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + id);
+        if (userRepository.toggleStatus(springUser.getUsername(), version, StatusType.DELETED) == 0) {
+            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + springUser.getUsername());
         }
         return ResponseEntity.ok().build();
     }

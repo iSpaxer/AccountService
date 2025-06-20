@@ -14,7 +14,8 @@ public interface EntityMapper {
                 entity.getStatus(),
                 entity.getCreatedDate(),
                 entity.getLastUpdateDate(),
-                entity.getUsername()
+                entity.getUsername(),
+                entity.getDescription()
         );
     }
 

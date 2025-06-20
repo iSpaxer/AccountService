@@ -29,8 +29,8 @@ public interface AbstractRepository<T extends AbstractEntity, ID> extends JpaRep
 
     @Modifying
     @Query("""
-            UPDATE #{#entityName} abstr 
-            SET abstr.status = :status, 
+            UPDATE #{#entityName} abstr
+            SET abstr.status = :status,
             abstr.deletedDate = CASE WHEN :status = 'DELETED' THEN CURRENT_TIMESTAMP ELSE null END
             WHERE abstr.id = :id AND abstr.version = :version
             """)

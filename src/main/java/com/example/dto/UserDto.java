@@ -16,18 +16,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto extends AbstractDto {
-    String username;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    String password;
-    @JsonIgnore
-    List<PostDto> posts;
 
-    public UserDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate, String username) {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
+    private String description;
+    @JsonIgnore
+    private List<PostDto> posts;
+
+    public UserDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate, String username, String description) {
         this.id = id;
         this.status = status;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
         this.username = username;
+        this.description = description;
     }
 
 
