@@ -108,6 +108,13 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
+            <resource>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>pom.xml</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
         </resources>
 
         <plugins>
@@ -162,7 +169,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            
+
         </plugins>
     </build>
 
