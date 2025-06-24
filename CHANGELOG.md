@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/iSpaxer/AccountService/compare/v1.1.0...v1.2.0) (2025-06-24)
+
+
+### Features
+
+* Настройка Spring Security  ([#13](https://github.com/iSpaxer/AccountService/issues/13)) ([fb1b1bb](https://github.com/iSpaxer/AccountService/commit/fb1b1bb36e83a41449ea28e18ec489d446a1347e))
+
 ## [1.1.0](https://github.com/iSpaxer/AccountService/compare/v1.0.0...v1.1.0) (2025-06-24)
 
 
