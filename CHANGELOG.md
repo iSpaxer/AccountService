@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/iSpaxer/AccountService/compare/v1.0.0...v1.1.0) (2025-06-24)
+
+
+### Features
+
+* revert commit ([d548952](https://github.com/iSpaxer/AccountService/commit/d548952100b2c16c45a68ca9c6141243ec955599))
+
 ## 1.0.0 (2025-06-11)
 
 
