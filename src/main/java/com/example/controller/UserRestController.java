@@ -42,7 +42,8 @@ public class UserRestController {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserRestController(UserRepository userRepository, PostRepository postRepository, EntityMapper mapper, EntityManager entityManager, PasswordEncoder passwordEncoder) {
+    public UserRestController(UserRepository userRepository, PostRepository postRepository, EntityMapper mapper,
+                              EntityManager entityManager, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.mapper = mapper;
@@ -60,7 +61,8 @@ public class UserRestController {
     }
 
     private Long checkSuchUser(String username, StatusType status) {
-        return userRepository.existsByUsernameAndStatus(username, status).orElseThrow(() -> new NotFoundException(username));
+        return userRepository.existsByUsernameAndStatus(username, status)
+                .orElseThrow(() -> new NotFoundException(username));
     }
 
     // -------------------------------------
@@ -102,7 +104,8 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     // todo OptimisticLockException
     public ResponseEntity<UserDto> update(@RequestBody UserDto dto, @AuthenticationPrincipal SpringUser springUser) {
-        var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(springUser.getUsername()));
+        var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
+                .orElseThrow(() -> new NotFoundException(springUser.getUsername()));
         return ResponseEntity.ok(mapper.mapToDto(userRepository.save(mapper.map(entity, dto))));
     }
 
@@ -168,10 +171,11 @@ public class UserRestController {
     @Operation(
             security = {@SecurityRequirement(name = "JWT")}
     )
-    @PutMapping("/{id:[1-9]\\d*}/post") // todo
+    @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
-        var post = postRepository.findActiveByIdAndUserId(dto.getId(), springUser.getId()).orElseThrow(() -> new NotFoundException(springUser.getId()));
+        var post = postRepository.findActiveByIdAndUserId(dto.getId(), springUser.getId())
+                .orElseThrow(() -> new NotFoundException(springUser.getId()));
         mapper.map(post, dto);
         return ResponseEntity.ok(mapper.mapToDto(postRepository.save(post)));
     }
