@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/iSpaxer/AccountService/compare/v1.2.0...v1.2.1) (2025-06-24)
+
+
+### Bug Fixes
+
+* исправление docker ([#17](https://github.com/iSpaxer/AccountService/issues/17)) ([fe006ad](https://github.com/iSpaxer/AccountService/commit/fe006ade236b9a775995afd17d574605326d7cca))
+
 ## [1.2.0](https://github.com/iSpaxer/AccountService/compare/v1.1.0...v1.2.0) (2025-06-24)
 
 
