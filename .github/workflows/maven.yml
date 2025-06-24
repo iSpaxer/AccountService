@@ -62,6 +62,6 @@ jobs:
           ssh -i ~/.ssh/id_rsa spaxer@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/spaxer/application/AuthService
             docker load -i auth-service.tar
-            docker compose up -d --build
+            docker compose up -d
           EOF
 
