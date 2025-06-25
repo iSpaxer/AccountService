@@ -27,7 +27,15 @@ public class UserDto extends AbstractDto {
     @JsonIgnore
     private List<PostDto> posts;
 
-    public UserDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate, String username, String description) {
+    public UserDto(String username, String password, String description) {
+        this.username = username;
+        this.password = password;
+        this.description = description;
+    }
+
+    public UserDto(Long id, StatusType status, LocalDateTime createDate,
+                   LocalDateTime lastUpdateDate, String username,
+                   String description) {
         this.id = id;
         this.status = status;
         this.createDate = createDate;
@@ -35,6 +43,5 @@ public class UserDto extends AbstractDto {
         this.username = username;
         this.description = description;
     }
-
 
 }

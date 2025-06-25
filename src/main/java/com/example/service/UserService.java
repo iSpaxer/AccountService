@@ -25,8 +25,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository repository, EntityMapper mapper,
-                       PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, EntityMapper mapper, PasswordEncoder passwordEncoder) {
         this.userRepository = repository;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
@@ -39,16 +38,27 @@ public class UserService {
         return mapper.mapToDto(user);
     }
 
-    public UserDto getUser(Long id) {
-        User user = (id != null)
-                ? userRepository.findActiveById(id).orElseThrow(() -> new NotFoundException(id))
-                : getAuthenticatedUser();
+    public UserDto getUser(Long userId) {
+        User user = (userId != null) ? userRepository.findActiveById(userId)
+                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser();
 
         return mapper.mapToDto(user);
     }
 
-    // todo OptimisticLockException
+    private User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
+            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+        }
+
+        return userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
+    }
+
     public UserDto updateUser(UserDto dto, SpringUser springUser) {
+        if (!dto.getPassword().isEmpty()) {
+            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
                 .orElseThrow(() -> new NotFoundException(springUser.getUsername()));
         return mapper.mapToDto(userRepository.save(mapper.map(entity, dto)));
@@ -78,15 +88,7 @@ public class UserService {
     public JwtUserDetails getUserDetailsByUsername(String username) {
         var user = getByUsername(username);
 
-        return new JwtUserDetails(
-                user.getId(),
-                user.getUsername(),
-                user.getPassword()
-        );
-    }
-
-    public Long checkSuchUser(Long id, StatusType status) {
-        return userRepository.existsByIdAndStatus(id, status).orElseThrow(() -> new NotFoundException(id));
+        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword());
     }
 
     public Long checkSuchUser(Long id) {
@@ -96,17 +98,6 @@ public class UserService {
     public Long checkSuchUser(String username, StatusType status) {
         return userRepository.existsByUsernameAndStatus(username, status)
                 .orElseThrow(() -> new NotFoundException(username));
-    }
-
-    // -----Private--------
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
-            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
-        }
-
-        return userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
-                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
     }
 
     private User getByUsername(String username) {
