@@ -29,7 +29,7 @@ public abstract class AbstractEntity implements Serializable {
 
     @Column(nullable = false)
     @Enumerated(STRING)
-    protected StatusType status;
+    protected StatusType status = StatusType.ACTIVE;
 
     @CreatedDate
     @Column(name = "created_date", updatable = false, nullable = false)

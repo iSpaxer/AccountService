@@ -31,10 +31,9 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDto createUser(UserDto dto) {
+    public UserDto createUser(LoginRequest dto) {
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-        var user = userRepository.save(mapper.mapToEntity(dto));
-
+        var user = userRepository.save(new User((Long) null, dto.getUsername(), dto.getPassword()));
         return mapper.mapToDto(user);
     }
 
