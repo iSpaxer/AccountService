@@ -23,7 +23,8 @@ spring:
       enabled: true
 
 app:
-  version: test
+  version: _test
+
 
 jwt:
   access-token-key: ${JWT_ACCESS_KEY}

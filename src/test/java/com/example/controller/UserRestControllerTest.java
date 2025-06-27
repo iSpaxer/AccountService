@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -25,6 +26,9 @@ class UserRestControllerTest {
     private final ObjectMapper mapper;
     private final ApplicationDataComponent applicationDataComponent;
 
+    @Value("${app.version}")
+    private String path;
+
 
     @Autowired
     public UserRestControllerTest(MockMvc mockMvc, ObjectMapper mapper,
@@ -32,6 +36,7 @@ class UserRestControllerTest {
         this.mockMvc = mockMvc;
         this.mapper = mapper;
         this.applicationDataComponent = applicationDataComponent;
+
     }
 
     @Test
@@ -40,11 +45,11 @@ class UserRestControllerTest {
         String str = mapper.writeValueAsString(userDto);
         System.out.println(str);
         mockMvc.perform(MockMvcRequestBuilders.post(
-                                "/api/v" + applicationDataComponent.getBuildProperties().getVersion() + "/user/create")
+                                "/api/v" + path + "/user/create") // todo отличия в app.properties и штуке что я использую
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(str))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("alexandr"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("alexandr"));
         //                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("test@example.com"));
     }
 
