@@ -46,7 +46,7 @@ jobs:
         run: |
           mkdir -p deploy
           docker save auth-service:latest -o auth-service.tar
-          cp docker-compose.yml/ deploy/
+          cp docker-compose.yml deploy/
 
       - name: Set up SSH key
         run: |
