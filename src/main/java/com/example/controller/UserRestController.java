@@ -8,6 +8,7 @@ import com.example.service.PostService;
 import com.example.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,19 +33,20 @@ public class UserRestController {
 
 
     // -------------------------------------
-    // User
+    // User todo может быть "обратный" интерсептор. Типо да ты получил данные.. Но не все
     // -------------------------------------
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserDto> createUser(@RequestBody LoginRequest dto) {
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid LoginRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
     }
 
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @GetMapping({"/{id:[1-9]\\d*}", ""})
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDto> getUser(@PathVariable(required = false) Long id) {
-        return ResponseEntity.ok(userService.getUser(id));
+    public ResponseEntity<UserDto> getUser(@PathVariable(required = false) Long id,
+                                           @AuthenticationPrincipal SpringUser springUser) {
+        return ResponseEntity.ok(userService.getUser(id, springUser));
     }
 
 

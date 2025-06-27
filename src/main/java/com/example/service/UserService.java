@@ -2,6 +2,7 @@ package com.example.service;
 
 import com.example.dto.LoginRequest;
 import com.example.dto.UserDto;
+import com.example.dto.Views;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.UserRepository;
@@ -37,14 +38,64 @@ public class UserService {
         return mapper.mapToDto(user);
     }
 
-    public UserDto getUser(Long userId) {
-        User user = (userId != null) ? userRepository.findActiveById(userId)
-                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser();
-
-        return mapper.mapToDto(user);
+    private User getActiveUserById(Long userId) {
+        return userRepository.findActiveById(userId)
+                .orElseThrow(() -> new NotFoundException(userId));
     }
 
-    private User getAuthenticatedUser() {
+    //    public UserDto getUser(Long userId) {
+    //        User user = (userId != null) ? userRepository.findActiveById(userId)
+    //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser();
+    //
+    //        // Получаем ID текущего пользователя из JWT
+    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //        Long authenticatedUserId = null;
+    //        if (auth != null && auth.getPrincipal() instanceof SpringUser springUser) {
+    //            authenticatedUserId = springUser.getId();
+    //        }
+    //
+    //        // Определяем представление в зависимости от совпадения ID
+    //        Class<?> view = (userId != null && userId.equals(authenticatedUserId))
+    //                ? Views.Authenticated.class
+    //                : Views.Public.class;
+    //
+    //        // Маппинг с использованием выбранного представления
+    //        return objectMapper.convertValue(user, UserDto.class, view);
+    //    }
+    //
+    //    private User getAuthenticatedUser() {
+    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
+    //            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+    //        }
+    //
+    //        return userRepository.findByIdAndStatus(springUser.getId(), StatusType.ACTIVE)
+    //                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
+    //    }
+
+    public UserDto getUser(Long userId, SpringUser springUser) {
+        var user = getActiveUserById(userId);
+
+        var view = springUser != null && (userId == null || springUser.getId().equals(userId))
+                ? Views.PublicView.class
+                : Views.MySelfView.class;
+        return mapper.mapToDto(user, view);
+
+
+        //        User user = (userId != null) ? userRepository.findActiveById(userId)
+        //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser(userId);
+
+        //        Class<?> view = (userId != null && authenticatedUserId != null && userId.equals(authenticatedUserId))
+        //                ? Views.Authenticated.class
+        //                : Views.Public.class;
+        //
+        //        // Маппинг с использованием выбранного представления
+        //        return objectMapper.convertValue(user, UserDto.class, view);
+
+        //        return mapper.mapToDto(user);
+    }
+
+    private User getAuthenticatedUser(Long userId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
             throw new AuthenticationCredentialsNotFoundException("Unauthorized");

@@ -91,7 +91,7 @@ class UserServiceTest {
         Mockito.when(userRepository.findActiveById(1L)).thenReturn(Optional.of(findedUser));
         Mockito.when(mapper.mapToDto(findedUser)).thenReturn(expectedDto);
 
-        UserDto result = userService.getUser(1L);
+        UserDto result = userService.getUser(1L, springUser);
 
         Assertions.assertEquals(expectedDto, result);
     }
@@ -102,7 +102,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.findActiveById(userId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(NotFoundException.class, () -> userService.getUser(userId));
+        Assertions.assertThrows(NotFoundException.class, () -> userService.getUser(userId, springUser));
 
         Mockito.verify(userRepository).findActiveById(userId);
     }
@@ -128,7 +128,7 @@ class UserServiceTest {
                 .thenReturn(Optional.of(authenticatedUser));
         Mockito.when(mapper.mapToDto(authenticatedUser)).thenReturn(expectedDto);
 
-        var serviceUserDto = userService.getUser(null);
+        var serviceUserDto = userService.getUser(null, springUser);
 
         Assertions.assertEquals(expectedDto, serviceUserDto);
     }
