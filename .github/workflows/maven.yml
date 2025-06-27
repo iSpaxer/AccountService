@@ -44,7 +44,9 @@ jobs:
 
       - name: Save Docker image to tarball
         run: |
+          mkdir -p deploy
           docker save auth-service:latest -o auth-service.tar
+          cp docker-compose.yml/ deploy/
 
       - name: Set up SSH key
         run: |
@@ -55,7 +57,7 @@ jobs:
 
       - name: Copy image to server
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa" auth-service.tar spaxer@${{ secrets.SSH_HOST }}:/home/spaxer/application/AuthService/
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa" deploy/ spaxer@${{ secrets.SSH_HOST }}:/home/spaxer/application/AuthService/
 
       - name: Load image and run compose
         run: |
