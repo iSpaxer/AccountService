@@ -1,33 +1,157 @@
 package com.example.service;
 
+import com.example.dto.LoginRequest;
+import com.example.dto.UserDto;
+import com.example.dto.Views;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.UserRepository;
 import com.example.security.JwtUserDetails;
+import com.example.security.SpringUser;
+import com.example.util.EntityMapper;
 import com.example.util.exception.NotFoundException;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class UserService {
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final EntityMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository repository) {
-        this.repository = repository;
+    public UserService(UserRepository repository, EntityMapper mapper, PasswordEncoder passwordEncoder) {
+        this.userRepository = repository;
+        this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    private User findBydUsername(String username) {
-        return repository.findByUsernameAndStatus(username, StatusType.ACTIVE)
-                .orElseThrow(() -> new NotFoundException("User not found!"));
+    public UserDto createUser(LoginRequest dto) {
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+        var user = userRepository.save(new User((Long) null, dto.getUsername(), dto.getPassword()));
+        return mapper.mapToDto(user);
     }
+
+    private User getActiveUserById(Long userId) {
+        return userRepository.findActiveById(userId)
+                .orElseThrow(() -> new NotFoundException(userId));
+    }
+
+    //    public UserDto getUser(Long userId) {
+    //        User user = (userId != null) ? userRepository.findActiveById(userId)
+    //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser();
+    //
+    //        // Получаем ID текущего пользователя из JWT
+    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //        Long authenticatedUserId = null;
+    //        if (auth != null && auth.getPrincipal() instanceof SpringUser springUser) {
+    //            authenticatedUserId = springUser.getId();
+    //        }
+    //
+    //        // Определяем представление в зависимости от совпадения ID
+    //        Class<?> view = (userId != null && userId.equals(authenticatedUserId))
+    //                ? Views.Authenticated.class
+    //                : Views.Public.class;
+    //
+    //        // Маппинг с использованием выбранного представления
+    //        return objectMapper.convertValue(user, UserDto.class, view);
+    //    }
+    //
+    //    private User getAuthenticatedUser() {
+    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
+    //            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+    //        }
+    //
+    //        return userRepository.findByIdAndStatus(springUser.getId(), StatusType.ACTIVE)
+    //                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
+    //    }
+
+    public UserDto getUser(Long userId, SpringUser springUser) {
+        var user = getActiveUserById(userId);
+
+        var view = springUser != null && (userId == null || springUser.getId().equals(userId))
+                ? Views.PublicView.class
+                : Views.MySelfView.class;
+        return mapper.mapToDto(user, view);
+
+
+        //        User user = (userId != null) ? userRepository.findActiveById(userId)
+        //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser(userId);
+
+        //        Class<?> view = (userId != null && authenticatedUserId != null && userId.equals(authenticatedUserId))
+        //                ? Views.Authenticated.class
+        //                : Views.Public.class;
+        //
+        //        // Маппинг с использованием выбранного представления
+        //        return objectMapper.convertValue(user, UserDto.class, view);
+
+        //        return mapper.mapToDto(user);
+    }
+
+    private User getAuthenticatedUser(Long userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
+            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+        }
+
+        return userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
+    }
+
+    public UserDto updateUser(UserDto dto, SpringUser springUser) {
+        if (!dto.getPassword().isEmpty()) {
+            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+        var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
+                .orElseThrow(() -> new NotFoundException(springUser.getUsername()));
+        return mapper.mapToDto(userRepository.save(mapper.map(entity, dto)));
+    }
+
+    public void restoreUser(LoginRequest dto) {
+        var user = userRepository.findByUsernameAndStatus(dto.getUsername(), StatusType.DELETED)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
+
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Login or password not valid");
+        }
+
+        user.setStatus(StatusType.ACTIVE);
+        userRepository.save(user);
+    }
+
+    public void deleteSoft(SpringUser springUser) {
+        var version = checkSuchUser(springUser.getUsername(), StatusType.ACTIVE);
+
+        if (userRepository.toggleStatus(springUser.getUsername(), version, StatusType.DELETED) == 0) {
+            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + springUser.getUsername());
+        }
+    }
+
 
     public JwtUserDetails getUserDetailsByUsername(String username) {
-        var user = findBydUsername(username);
-        return new JwtUserDetails(
-                user.getId(),
-                user.getUsername(),
-                user.getPassword()
-        );
+        var user = getByUsername(username);
+
+        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword());
+    }
+
+    public Long checkSuchUser(Long id) {
+        return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(id));
+    }
+
+    public Long checkSuchUser(String username, StatusType status) {
+        return userRepository.existsByUsernameAndStatus(username, status)
+                .orElseThrow(() -> new NotFoundException(username));
+    }
+
+    private User getByUsername(String username) {
+        return userRepository.findByUsernameAndStatus(username, StatusType.ACTIVE)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 }

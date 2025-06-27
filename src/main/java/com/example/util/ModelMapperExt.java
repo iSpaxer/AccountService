@@ -2,10 +2,14 @@ package com.example.util;
 
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
+import com.example.dto.Views;
 import com.example.entity.Post;
 import com.example.entity.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,11 +17,28 @@ import java.util.List;
 @Component
 public class ModelMapperExt extends ModelMapper implements EntityMapper {
 
-    public ModelMapperExt() {
+    private final ObjectMapper objectMapper;
+
+    @Autowired
+    public ModelMapperExt(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
         this.getConfiguration()
                 .setFieldMatchingEnabled(true)
                 .setPropertyCondition(Conditions.isNotNull())
                 .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE);
+    }
+
+    @Override
+    public UserDto mapToDto(User user, Class<? extends Views.BaseView> view) {
+        try {
+            // Сериализация user с учетом JsonView
+            String json = objectMapper.writerWithView(view)
+                    .writeValueAsString(user);
+            
+            return objectMapper.readValue(json, UserDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to map User to UserDto with view: " + view.getSimpleName(), e);
+        }
     }
 
     @Override

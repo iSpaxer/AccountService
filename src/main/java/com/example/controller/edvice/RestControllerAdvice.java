@@ -14,11 +14,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.example.util.StaticUtilsStr.POST_USER_CONSTRAINT;
@@ -45,6 +48,21 @@ public class RestControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(body);
+    }
+
+    @ApiResponse(responseCode = "400")
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionBody> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String fieldName = error.getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        var body = new ExceptionBody("Invalid JSON format", errors);
+        return ResponseEntity.badRequest().body(body);
     }
 
     @ApiResponse(responseCode = "400")
@@ -129,6 +147,8 @@ public class RestControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionBody handleCommonException(Exception e) {
         log.error("Unexpected error occurred", e);
-        return new ExceptionBody("INTERNAL_SERVER_ERROR", Collections.singletonMap(e.toString().substring(0, e.toString().indexOf(":")), e.getMessage()));
+        return new ExceptionBody("INTERNAL_SERVER_ERROR",
+                                 Collections.singletonMap(e.toString().substring(0, e.toString().indexOf(":")),
+                                                          e.getMessage()));
     }
 }

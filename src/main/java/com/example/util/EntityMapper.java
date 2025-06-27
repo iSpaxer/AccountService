@@ -2,6 +2,7 @@ package com.example.util;
 
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
+import com.example.dto.Views;
 import com.example.entity.Post;
 import com.example.entity.User;
 
@@ -18,6 +19,9 @@ public interface EntityMapper {
                 entity.getDescription()
         );
     }
+
+    UserDto mapToDto(User user, Class<? extends Views.BaseView> view);
+
 
     default User mapToEntity(UserDto dto) {
         return new User(
