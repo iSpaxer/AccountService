@@ -2,10 +2,8 @@ package com.example.util;
 
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
-import com.example.dto.Views;
 import com.example.entity.Post;
 import com.example.entity.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -29,16 +27,8 @@ public class ModelMapperExt extends ModelMapper implements EntityMapper {
     }
 
     @Override
-    public UserDto mapToDto(User user, Class<? extends Views.BaseView> view) {
-        try {
-            // Сериализация user с учетом JsonView
-            String json = objectMapper.writerWithView(view)
-                    .writeValueAsString(user);
-            
-            return objectMapper.readValue(json, UserDto.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to map User to UserDto with view: " + view.getSimpleName(), e);
-        }
+    public UserDto mapToDto(User entity) {
+        return this.map(entity, UserDto.class);
     }
 
     @Override

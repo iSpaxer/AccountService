@@ -46,7 +46,8 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> getUser(@PathVariable(required = false) Long id,
                                            @AuthenticationPrincipal SpringUser springUser) {
-        return ResponseEntity.ok(userService.getUser(id, springUser));
+        UserDto value = userService.getUser(id, springUser);
+        return ResponseEntity.ok(value);
     }
 
 

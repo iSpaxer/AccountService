@@ -3,7 +3,6 @@ package com.example.dto;
 import com.example.entity.StatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,11 +27,9 @@ public class AbstractDto {
     @JsonIgnore
     protected StatusType status;
 
-    @JsonView(Views.MySelfView.class)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     protected LocalDateTime createDate;
 
-    @JsonView(Views.MySelfView.class)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     protected LocalDateTime lastUpdateDate;
 
@@ -44,6 +41,10 @@ public class AbstractDto {
         this.status = status;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public AbstractDto(Long id) {
+        this.id = id;
     }
 
     @Override

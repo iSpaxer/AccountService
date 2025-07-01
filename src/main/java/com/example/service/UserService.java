@@ -2,7 +2,7 @@ package com.example.service;
 
 import com.example.dto.LoginRequest;
 import com.example.dto.UserDto;
-import com.example.dto.Views;
+import com.example.dto.ViewsE;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.UserRepository;
@@ -12,10 +12,7 @@ import com.example.util.EntityMapper;
 import com.example.util.exception.NotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,67 +40,14 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(userId));
     }
 
-    //    public UserDto getUser(Long userId) {
-    //        User user = (userId != null) ? userRepository.findActiveById(userId)
-    //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser();
-    //
-    //        // Получаем ID текущего пользователя из JWT
-    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //        Long authenticatedUserId = null;
-    //        if (auth != null && auth.getPrincipal() instanceof SpringUser springUser) {
-    //            authenticatedUserId = springUser.getId();
-    //        }
-    //
-    //        // Определяем представление в зависимости от совпадения ID
-    //        Class<?> view = (userId != null && userId.equals(authenticatedUserId))
-    //                ? Views.Authenticated.class
-    //                : Views.Public.class;
-    //
-    //        // Маппинг с использованием выбранного представления
-    //        return objectMapper.convertValue(user, UserDto.class, view);
-    //    }
-    //
-    //    private User getAuthenticatedUser() {
-    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
-    //            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
-    //        }
-    //
-    //        return userRepository.findByIdAndStatus(springUser.getId(), StatusType.ACTIVE)
-    //                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
-    //    }
-
     public UserDto getUser(Long userId, SpringUser springUser) {
-        var user = getActiveUserById(userId);
-
         var view = springUser != null && (userId == null || springUser.getId().equals(userId))
-                ? Views.PublicView.class
-                : Views.MySelfView.class;
-        return mapper.mapToDto(user, view);
-
-
-        //        User user = (userId != null) ? userRepository.findActiveById(userId)
-        //                .orElseThrow(() -> new NotFoundException(userId)) : getAuthenticatedUser(userId);
-
-        //        Class<?> view = (userId != null && authenticatedUserId != null && userId.equals(authenticatedUserId))
-        //                ? Views.Authenticated.class
-        //                : Views.Public.class;
-        //
-        //        // Маппинг с использованием выбранного представления
-        //        return objectMapper.convertValue(user, UserDto.class, view);
-
-        //        return mapper.mapToDto(user);
+                ? ViewsE.MYSELF
+                : ViewsE.PUBLIC;
+        return userRepository.findActiveByIdAndTypeView(userId, view)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 
-    private User getAuthenticatedUser(Long userId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof SpringUser springUser)) {
-            throw new AuthenticationCredentialsNotFoundException("Unauthorized");
-        }
-
-        return userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
-                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Unauthorized. User not found."));
-    }
 
     public UserDto updateUser(UserDto dto, SpringUser springUser) {
         if (!dto.getPassword().isEmpty()) {

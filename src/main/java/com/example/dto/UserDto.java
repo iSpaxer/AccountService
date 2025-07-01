@@ -36,6 +36,12 @@ public class UserDto extends AbstractDto {
         this.description = description;
     }
 
+    public UserDto(Long id, String username, String description) {
+        super(id);
+        this.username = username;
+        this.description = description;
+    }
+
     public UserDto(Long id, StatusType status, LocalDateTime createDate,
                    LocalDateTime lastUpdateDate, String username,
                    String description) {

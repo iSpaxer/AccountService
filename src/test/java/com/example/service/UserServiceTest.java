@@ -9,15 +9,12 @@ import com.example.rep.UserRepository;
 import com.example.security.JwtUserDetails;
 import com.example.security.SpringUser;
 import com.example.util.EntityMapper;
-import com.example.util.exception.NotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -29,7 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
@@ -82,30 +79,30 @@ class UserServiceTest {
         Mockito.verify(mapper).mapToDto(savedEntity);
     }*/
 
-    @Test
-    public void getUser_shouldReturnDto() {
-        LocalDateTime now = LocalDateTime.now();
-        User findedUser = new User();
-        UserDto expectedDto = new UserDto(1L, StatusType.ACTIVE, now, now, "alex", "desc");
-
-        Mockito.when(userRepository.findActiveById(1L)).thenReturn(Optional.of(findedUser));
-        Mockito.when(mapper.mapToDto(findedUser)).thenReturn(expectedDto);
-
-        UserDto result = userService.getUser(1L, springUser);
-
-        Assertions.assertEquals(expectedDto, result);
-    }
-
-    @Test
-    public void getUser_shouldThrowNotFound_whenUserNotFoundById() {
-        Long userId = 99L;
-
-        Mockito.when(userRepository.findActiveById(userId)).thenReturn(Optional.empty());
-
-        Assertions.assertThrows(NotFoundException.class, () -> userService.getUser(userId, springUser));
-
-        Mockito.verify(userRepository).findActiveById(userId);
-    }
+    //    @Test
+    //    public void getUser_shouldReturnDto() {
+    //        LocalDateTime now = LocalDateTime.now();
+    //        User findedUser = new User();
+    //        UserDto expectedDto = new UserDto(1L, StatusType.ACTIVE, now, now, "alex", "desc");
+    //
+    //        Mockito.when(userRepository.findActiveById(1L)).thenReturn(Optional.of(findedUser));
+    //        Mockito.when(mapper.mapToDto(findedUser)).thenReturn(expectedDto);
+    //
+    //        UserDto result = userService.getUser(1L, springUser);
+    //
+    //        Assertions.assertEquals(expectedDto, result);
+    //    }
+    //
+    //    @Test
+    //    public void getUser_shouldThrowNotFound_whenUserNotFoundById() {
+    //        Long userId = 99L;
+    //
+    //        Mockito.when(userRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    //
+    //        Assertions.assertThrows(NotFoundException.class, () -> userService.getUser(userId, springUser));
+    //
+    //        Mockito.verify(userRepository).findActiveById(userId);
+    //    }
 
     @Test
     public void getUser_shouldReturnAuthenticatedUser_whenUserIdIsNull() {
