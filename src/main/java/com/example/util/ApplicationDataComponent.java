@@ -6,6 +6,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +16,16 @@ import java.util.*;
 
 @Getter
 @Component
+// todo наверное стоит отказаться от buildProperties
 public class ApplicationDataComponent {
 
     private final List<Map<String, String>> technologies;
 
+    @Deprecated
     private final BuildProperties buildProperties;
+
+    @Value("${app.version}")
+    private String version;
 
     public ApplicationDataComponent(BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
@@ -27,14 +33,14 @@ public class ApplicationDataComponent {
     }
 
     public String glueEndpoint(String path) {
-        return "/api/v" + this.getBuildProperties().getVersion() + path;
+        return "/api/v" + version + path;
     }
 
     public String[] glueEndpoints(String... paths) {
         return Arrays.stream(paths)
                 .filter(Objects::nonNull)
                 .map(path -> path.trim().replaceAll("/+$", ""))
-                .map(path -> "/api/v" + this.getBuildProperties().getVersion() + path)
+                .map(path -> "/api/v" + version + path)
                 .toArray(String[]::new);
     }
 
@@ -71,8 +77,8 @@ public class ApplicationDataComponent {
 
                     if (version != null && version.startsWith("${") && version.endsWith("}")) {
                         tech.put("version",
-                                propertiesMap.getOrDefault(
-                                        version.substring(2, version.length() - 1), "unknown")
+                                 propertiesMap.getOrDefault(
+                                         version.substring(2, version.length() - 1), "unknown")
                         );
                     } else {
                         tech.put("version", propertiesMap.get("spring-boot.version"));

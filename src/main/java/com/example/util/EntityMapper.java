@@ -8,32 +8,16 @@ import com.example.entity.User;
 import java.util.List;
 
 public interface EntityMapper {
-    default UserDto mapToDto(User entity) {
-        return new UserDto(
-                entity.getId(),
-                entity.getStatus(),
-                entity.getCreatedDate(),
-                entity.getLastUpdateDate(),
-                entity.getUsername(),
-                entity.getDescription()
-        );
-    }
+    UserDto mapToDto(User entity);
 
-    default User mapToEntity(UserDto dto) {
-        return new User(
-                dto.getId(),
-                dto.getUsername()
-        );
-    }
+    User mapToEntity(UserDto dto);
 
 
-    default User map(User entity, UserDto dto) {
-        return null;
-    }
+    User map(User entity, UserDto dto);
 
+    @Deprecated
     // --------------------------
-
-    default PostDto mapToDto(Post entity) {
+    default PostDto mapToDto(Post entity) { // todo
         return new PostDto(
                 entity.getId(),
                 entity.getMessage(),
@@ -44,17 +28,10 @@ public interface EntityMapper {
 
     List<PostDto> mapToDto(List<Post> entityList);
 
-    default Post mapToEntity(PostDto dto) {
-        return new Post(
-                dto.getId(),
-                dto.getMessage()
-        );
-    }
+    Post mapToEntity(PostDto dto);
 
     List<Post> mapToEntity(List<PostDto> dtoList);
 
-    default Post map(Post entity, PostDto dto) {
-        return null;
-    }
+    Post map(Post entity, PostDto dto);
 
 }

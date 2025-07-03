@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface UserRepository extends AbstractRepository<User, Long> {
+public interface UserRepository extends AbstractRepository<User, Long>, UserRepositoryAdvanced {
 
     @Query("""
             SELECT user FROM #{#entityName} user WHERE user.username = :username AND  user.status = :status
