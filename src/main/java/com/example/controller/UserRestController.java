@@ -32,13 +32,11 @@ public class UserRestController {
     }
 
 
-    // -------------------------------------
-    // User todo может быть "обратный" интерсептор. Типо да ты получил данные.. Но не все
-    // -------------------------------------
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserDto> createUser(@RequestBody @Valid LoginRequest dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(dto));
+        UserDto user = userService.createUser(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @Operation(security = {@SecurityRequirement(name = "JWT")})

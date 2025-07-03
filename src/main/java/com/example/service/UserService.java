@@ -44,7 +44,7 @@ public class UserService {
         var view = springUser != null && (userId == null || springUser.getId().equals(userId))
                 ? ViewsE.MYSELF
                 : ViewsE.PUBLIC;
-        return userRepository.findActiveByIdAndTypeView(userId, view)
+        return userRepository.findActiveByIdAndTypeView(userId != null ? userId : springUser.getId(), view)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 

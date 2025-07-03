@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.LoginRequest;
+import com.example.dto.UserDto;
 import com.example.dto.jwt.JwtResponse;
 import com.example.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +20,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
@@ -29,15 +30,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserRestControllerTest {
 
     private final MockMvc mockMvc;
-    private final ObjectMapper mapper;
+    private final ObjectMapper objectMapper;
     @Value("${app.version}")
     private String path;
 
 
     @Autowired
-    public UserRestControllerTest(MockMvc mockMvc, ObjectMapper mapper) {
+    public UserRestControllerTest(MockMvc mockMvc, ObjectMapper objectMapper) {
         this.mockMvc = mockMvc;
-        this.mapper = mapper;
+        this.objectMapper = objectMapper;
     }
 
     @Nested
@@ -47,7 +48,7 @@ class UserRestControllerTest {
     @DisplayName("User CRUD - Successful Scenarios")
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class CRUDOperationsSuccess {
-        private final static LoginRequest USER_DTO = new LoginRequest("alexandr", "password");
+        private final static LoginRequest USER_LOGIN_DTO = new LoginRequest("alexandr", "password");
         private JwtResponse jwtResponse;
         private User user;
 
@@ -57,14 +58,14 @@ class UserRestControllerTest {
             var result = mockMvc.perform(MockMvcRequestBuilders
                                                  .post("/api/v" + path + "/user/create")
                                                  .contentType(MediaType.APPLICATION_JSON)
-                                                 .content(mapper.writeValueAsString(USER_DTO)))
+                                                 .content(objectMapper.writeValueAsString(USER_LOGIN_DTO)))
                     .andExpect(MockMvcResultMatchers.status().isCreated())
-                    .andExpect(jsonPath("$.username").value(USER_DTO.getUsername()))
+                    .andExpect(jsonPath("$.username").value(USER_LOGIN_DTO.getUsername()))
                     .andExpect(jsonPath("$.id").isNotEmpty())
                     .andReturn();
 
             var responseBody = result.getResponse().getContentAsString();
-            user = mapper.readValue(responseBody, User.class);
+            user = objectMapper.readValue(responseBody, User.class);
             assertNotNull(user.getId(), "User Id not be null");
         }
 
@@ -74,7 +75,7 @@ class UserRestControllerTest {
             var result = mockMvc.perform(MockMvcRequestBuilders
                                                  .post("/api/v" + path + "/jwt/login")
                                                  .contentType(MediaType.APPLICATION_JSON)
-                                                 .content(mapper.writeValueAsString(USER_DTO)))
+                                                 .content(objectMapper.writeValueAsString(USER_LOGIN_DTO)))
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(jsonPath("$.accessToken").isNotEmpty())
                     .andExpect(jsonPath("$.expiryAccessToken").isNotEmpty())
@@ -83,7 +84,7 @@ class UserRestControllerTest {
                     .andReturn();
 
             var responseBody = result.getResponse().getContentAsString();
-            jwtResponse = mapper.readValue(responseBody, JwtResponse.class);
+            jwtResponse = objectMapper.readValue(responseBody, JwtResponse.class);
 
             assertNotNull(jwtResponse.accessToken(), "Access token should not be null");
             assertNotNull(jwtResponse.expiryAccessToken(), "Expiry access token should not be null");
@@ -101,10 +102,112 @@ class UserRestControllerTest {
                     .andExpect(jsonPath("$.id").isNotEmpty())
                     .andExpect(jsonPath("$.username").isNotEmpty())
                     .andExpect(jsonPath("$.password").doesNotExist())
-                    .andExpect(jsonPath("$.createDate").doesNotExist())
+                    .andExpect(jsonPath("$.createdDate").doesNotExist())
                     .andExpect(jsonPath("$.lastUpdateDate").doesNotExist())
                     .andReturn();
+
+            var responseBody = result.getResponse().getContentAsString();
+
         }
+
+        @Test
+        @Order(4)
+        public void api_getMyselfUser() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                                    .get("/api/v" + path + "/user")
+                                    .header("Authorization", "Bearer " + jwtResponse.accessToken())
+                                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(MockMvcResultMatchers.status().isOk())
+                    .andExpect(jsonPath("$.id").isNotEmpty())
+                    .andExpect(jsonPath("$.username").isNotEmpty())
+                    .andExpect(jsonPath("$.password").doesNotExist())
+                    .andExpect(jsonPath("$.createdDate").isNotEmpty())
+                    .andExpect(jsonPath("$.lastUpdateDate").isNotEmpty())
+                    .andReturn();
+        }
+
+        @Test
+        @Order(5)
+        public void api_updateUser() throws Exception {
+            var json = """
+                    {
+                      "description": "description",
+                      "password": "new-password"
+                    }
+                    """;
+            var result = mockMvc.perform(MockMvcRequestBuilders
+                                                 .put("/api/v" + path + "/user")
+                                                 .header("Authorization", "Bearer " + jwtResponse.accessToken())
+                                                 .contentType(MediaType.APPLICATION_JSON)
+                                                 .content(json))
+                    .andExpect(MockMvcResultMatchers.status().isOk())
+                    .andExpect(jsonPath("$.id").isNotEmpty())
+                    .andExpect(jsonPath("$.username").isNotEmpty())
+                    .andExpect(jsonPath("$.password").doesNotExist())
+                    .andExpect(jsonPath("$.createdDate").isNotEmpty())
+                    .andExpect(jsonPath("$.lastUpdateDate").isNotEmpty())
+                    .andReturn();
+
+            var responseBody = result.getResponse().getContentAsString();
+            var updatedDto = objectMapper.readValue(responseBody, UserDto.class);
+
+            assertEquals("description", updatedDto.getDescription());
+            assertNotEquals(user.getLastUpdateDate(), updatedDto.getCreatedDate());
+            USER_LOGIN_DTO.setPassword("new-password");
+        }
+
+        //        @Test todo реализовать blackList
+        //        @Order(6)
+        //        public void api_checkNotValidJWT() throws Exception {
+        //            mockMvc.perform(MockMvcRequestBuilders
+        //                                    .get("/api/v" + path + "/user")
+        //                                    .header("Authorization", "Bearer " + jwtResponse.accessToken())
+        //                                    .contentType(MediaType.APPLICATION_JSON))
+        //                    .andExpect(MockMvcResultMatchers.status().isForbidden());
+        //        }
+
+        @Test
+        @Order(7)
+        public void api_loginWithNewPassword() throws Exception {
+            api_login();
+        }
+
+        @Test
+        @Order(8)
+        public void api_deleteUser() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                                    .delete("/api/v" + path + "/user")
+                                    .header("Authorization", "Bearer " + jwtResponse.accessToken())
+                                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(MockMvcResultMatchers.status().isOk());
+        }
+
+        //        @Test todo реализовать функционал
+        //        @Order(9)
+        //        public void test_NonValidJwt() throws Exception {
+        //
+        //        }
+
+        @Test
+        @Order(10)
+        public void test_loginWithDeleted() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                                    .post("/api/v" + path + "/jwt/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(USER_LOGIN_DTO)))
+                    .andExpect(MockMvcResultMatchers.status().isNotFound());
+        }
+
+        @Test
+        @Order(11)
+        public void api_restoreUser() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                                    .patch("/api/v" + path + "/user/restore")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(USER_LOGIN_DTO)))
+                    .andExpect(MockMvcResultMatchers.status().isOk());
+        }
+
 
     }
 
@@ -114,7 +217,7 @@ class UserRestControllerTest {
 
         private ResultActions createUser(String username, String password) throws Exception {
             var dto = new LoginRequest(username, password);
-            String str = mapper.writeValueAsString(dto);
+            String str = objectMapper.writeValueAsString(dto);
             return mockMvc.perform(MockMvcRequestBuilders.post(
                             "/api/v" + path + "/user/create")
                                            .contentType(MediaType.APPLICATION_JSON)

@@ -28,7 +28,7 @@ public class AbstractDto {
     protected StatusType status;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    protected LocalDateTime createDate;
+    protected LocalDateTime createdDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     protected LocalDateTime lastUpdateDate;
@@ -39,7 +39,7 @@ public class AbstractDto {
     public AbstractDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
         this.id = id;
         this.status = status;
-        this.createDate = createDate;
+        this.createdDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
     }
 

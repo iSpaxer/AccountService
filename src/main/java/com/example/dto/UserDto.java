@@ -47,7 +47,7 @@ public class UserDto extends AbstractDto {
                    String description) {
         this.id = id;
         this.status = status;
-        this.createDate = createDate;
+        this.createdDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
         this.username = username;
         this.description = description;
