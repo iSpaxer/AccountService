@@ -3,6 +3,7 @@ package com.example.dto;
 import com.example.entity.StatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,11 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDto extends AbstractDto {
 
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String username;
 
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
@@ -27,14 +30,27 @@ public class UserDto extends AbstractDto {
     @JsonIgnore
     private List<PostDto> posts;
 
-    public UserDto(Long id, StatusType status, LocalDateTime createDate, LocalDateTime lastUpdateDate, String username, String description) {
-        this.id = id;
-        this.status = status;
-        this.createDate = createDate;
-        this.lastUpdateDate = lastUpdateDate;
+    public UserDto(String username, String password, String description) {
+        this.username = username;
+        this.password = password;
+        this.description = description;
+    }
+
+    public UserDto(Long id, String username, String description) {
+        super(id);
         this.username = username;
         this.description = description;
     }
 
+    public UserDto(Long id, StatusType status, LocalDateTime createDate,
+                   LocalDateTime lastUpdateDate, String username,
+                   String description) {
+        this.id = id;
+        this.status = status;
+        this.createdDate = createDate;
+        this.lastUpdateDate = lastUpdateDate;
+        this.username = username;
+        this.description = description;
+    }
 
 }

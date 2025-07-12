@@ -1,17 +1,16 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Entity(name = "users")
 @Table(name = "users")
-@Builder
-@AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,20 +19,22 @@ public class User extends AbstractEntity {
 
     @Column(unique = true, updatable = false)
     private String username;
-
     @Column(nullable = false)
     private String password;
-
     private String description;
-
     @OneToMany(mappedBy = "user")
     private List<Post> postList;
 
-    public void createPost(Post post) {
-        if (!Objects.equals(post.getId(), id)) {
-            post.setId(id);
-        }
-        postList.add(post);
+    public User(Long id, Long version, StatusType status,
+                LocalDateTime createdDate,
+                LocalDateTime lastUpdateDate, LocalDateTime deletedDate,
+                String username,
+                String password, String description, List<Post> postList) {
+        super(id, version, status, createdDate, lastUpdateDate, deletedDate);
+        this.username = username;
+        this.password = password;
+        this.description = description;
+        this.postList = postList;
     }
 
     public User(Long id, String username, String password) {
@@ -47,11 +48,10 @@ public class User extends AbstractEntity {
         this.username = username;
     }
 
-    public User(Long id) {
-        super();
+    public User(String username, String password, String description) {
+        this.username = username;
+        this.password = password;
+        this.description = description;
     }
 
-    public URI getURI() {
-        return URI.create("/user/" + id);
-    }
 }

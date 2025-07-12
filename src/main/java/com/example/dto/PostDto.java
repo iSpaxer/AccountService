@@ -25,7 +25,7 @@ public class PostDto extends AbstractDto {
     public PostDto(Long id, String message, LocalDateTime createdDate, LocalDateTime lastUpdateDate) {
         this.id = id;
         this.message = message;
-        this.createDate = createdDate;
+        this.createdDate = createdDate;
         this.lastUpdateDate = lastUpdateDate;
     }
 
@@ -38,8 +38,8 @@ public class PostDto extends AbstractDto {
 
     @Override
     @JsonProperty(access = JsonProperty.Access.AUTO)
-    public LocalDateTime getCreateDate() {
-        return super.getCreateDate();
+    public LocalDateTime getCreatedDate() {
+        return super.getCreatedDate();
     }
 
     @Override
