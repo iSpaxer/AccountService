@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/iSpaxer/AccountService/compare/v1.2.1...v1.2.2) (2025-07-22)
+
+
+### Bug Fixes
+
+* Исправление transactional ([#32](https://github.com/iSpaxer/AccountService/issues/32)) ([0e4b811](https://github.com/iSpaxer/AccountService/commit/0e4b8113d7fb4b2168fa64df8e7a8bcf4f361ae1))
+
 ## [1.2.1](https://github.com/iSpaxer/AccountService/compare/v1.2.0...v1.2.1) (2025-06-24)
 
 
