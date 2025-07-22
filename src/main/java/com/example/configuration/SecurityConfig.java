@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -82,9 +81,9 @@ public class SecurityConfig {
                 .apply(jwtAuthenticationConfigurer);
 
         http
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .securityMatcher("/api/**")
-                .oauth2Login(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/info").permitAll()
                         .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user", "/user/**")).permitAll()
@@ -101,6 +100,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain chainAdmin(HttpSecurity http, ApplicationDataComponent appData) throws Exception {
         http
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .securityMatcher(appData.glueEndpoints("/admin/**"))
                 .authorizeHttpRequests(authorize -> authorize
@@ -115,6 +115,7 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain chainDefault(HttpSecurity http) throws Exception {
         http
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

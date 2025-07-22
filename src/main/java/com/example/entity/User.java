@@ -17,6 +17,9 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {
 
+    private Long githubId;
+    private String email;
+
     @Column(unique = true, updatable = false)
     private String username;
     @Column(nullable = false)
