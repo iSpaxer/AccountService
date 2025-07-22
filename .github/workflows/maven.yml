@@ -13,7 +13,7 @@ jobs:
       skip: ${{ steps.check.outputs.skip }}
     steps:
       - name: Check author and branch
-        id: check
+        id: check-step
         run: |
           echo "Actor: ${{ github.actor }}"
           echo "Ref: ${{ github.ref }}"
