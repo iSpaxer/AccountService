@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -37,7 +38,8 @@ import java.text.ParseException;
 public class SecurityConfig {
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -82,6 +84,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .securityMatcher("/api/**")
+                .oauth2Login(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/info").permitAll()
                         .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user", "/user/**")).permitAll()
@@ -89,7 +92,7 @@ public class SecurityConfig {
                         .requestMatchers(appData.glueEndpoints("/user", "/user/**")).authenticated()
                 )
                 .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                           sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
@@ -104,7 +107,7 @@ public class SecurityConfig {
                         .requestMatchers(appData.glueEndpoints("/admin/**")).hasRole("ADMIN")
                 )
                 .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                           sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
@@ -118,7 +121,7 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll()
                 )
                 .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                           sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
