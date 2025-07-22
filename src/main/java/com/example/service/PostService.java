@@ -9,6 +9,7 @@ import com.example.util.exception.BadRequestException;
 import com.example.util.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class PostService {
         this.entityManager = entityManager;
     }
 
+    @Transactional
     public PostDto createPost(PostDto dto, Long userId) {
         var post = mapper.mapToEntity(dto);
 
@@ -32,6 +34,7 @@ public class PostService {
         return mapper.mapToDto(postRepository.save(post));
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getPosts(Long userId) {
         var listPosts = postRepository.findByUserIdAndStatus(userId, StatusType.ACTIVE);
         if (listPosts.isEmpty()) {
@@ -40,6 +43,7 @@ public class PostService {
         return mapper.mapToDto(listPosts);
     }
 
+    @Transactional
     public PostDto updatePost(PostDto dto, Long userId) {
         var post = postRepository.findActiveByIdAndUserId(dto.getId(), userId)
                 .orElseThrow(() -> new NotFoundException(userId));
@@ -47,6 +51,7 @@ public class PostService {
         return mapper.mapToDto(postRepository.save(post));
     }
 
+    @Transactional
     public void deletePost(Long postId, Long userId) {
         var count = postRepository.deleteByIdAndUserId(postId, userId);
         if (count == 0) {
