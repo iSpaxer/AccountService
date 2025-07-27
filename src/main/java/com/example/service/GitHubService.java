@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.entity.GitHubUser;
 import com.example.rep.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -16,14 +17,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GitHubService {
 
-    //    @Value("${github.client-id}")
-    private final String clientId = "Ov23liT5VvgYfsg1zOVX";
+    @Value("${spring.security.oauth2.client.registration.github.client-id}")
+    private final String clientId;
 
-    //    @Value("${github.client-secret}")
-    private final String clientSecret = "694cdffe6386dbc31566c53941219b2023d33670";
+    @Value("${spring.security.oauth2.client.registration.github.client-secret}")
+    private final String clientSecret;
 
-    //    @Value("${github.redirect-uri}")
-    private final String redirectUri = "http://localhost:8080/auth/github/callback";
+    @Value("${spring.security.oauth2.client.registration.github.redirect}")
+    private final String redirectUri;
 
     private final UserRepository userRepository;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -70,7 +71,6 @@ public class GitHubService {
         ResponseEntity<GitHubUser> response = restTemplate.exchange(
                 "https://api.github.com/user", HttpMethod.GET, request, GitHubUser.class
         );
-
         return response.getBody();
     }
 }
