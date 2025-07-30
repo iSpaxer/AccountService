@@ -1,13 +1,14 @@
 package com.example.security;
 
 import com.example.entity.User;
+import com.example.security.auth.AuthPrincipalWithId;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class JwtUserDetails extends User implements UserDetails {
+public class JwtUserDetails extends User implements UserDetails, AuthPrincipalWithId {
 
     public JwtUserDetails(Long id, String username, @NotNull String password) {
         super(id, username, password);

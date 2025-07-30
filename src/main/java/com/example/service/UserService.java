@@ -6,8 +6,8 @@ import com.example.dto.ViewsE;
 import com.example.entity.StatusType;
 import com.example.entity.User;
 import com.example.rep.UserRepository;
+import com.example.security.DefaultAuthenticationPrincipal;
 import com.example.security.JwtUserDetails;
-import com.example.security.SpringUser;
 import com.example.util.EntityMapper;
 import com.example.util.exception.NotFoundException;
 import jakarta.persistence.OptimisticLockException;
@@ -38,21 +38,24 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDto getUser(Long userId, SpringUser springUser) {
-        var view = springUser != null && (userId == null || springUser.getId().equals(userId))
+    public UserDto getUser(Long userId, DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
+        var view = defaultAuthenticationPrincipal != null && (userId == null || defaultAuthenticationPrincipal.getId()
+                .equals(userId))
                 ? ViewsE.MYSELF
                 : ViewsE.PUBLIC;
-        return userRepository.findActiveByIdAndTypeView(userId != null ? userId : springUser.getId(), view)
+        return userRepository.findActiveByIdAndTypeView(
+                        userId != null ? userId : defaultAuthenticationPrincipal.getId(), view)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 
     @Transactional
-    public UserDto updateUser(UserDto dto, SpringUser springUser) {
-        if (!dto.getPassword().isEmpty()) {
+    public UserDto updateUser(UserDto dto, DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        var entity = userRepository.findByUsernameAndStatus(springUser.getUsername(), StatusType.ACTIVE)
-                .orElseThrow(() -> new NotFoundException(springUser.getUsername()));
+        var entity = userRepository.findByIdAndStatus(defaultAuthenticationPrincipal.getId(),
+                                                      StatusType.ACTIVE)
+                .orElseThrow(() -> new NotFoundException(defaultAuthenticationPrincipal.getUsername()));
         return mapper.mapToDto(userRepository.save(mapper.map(entity, dto)));
     }
 
@@ -70,11 +73,13 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteSoft(SpringUser springUser) {
-        var version = checkSuchUser(springUser.getUsername(), StatusType.ACTIVE);
+    public void deleteSoft(DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
+        var version = checkSuchUser(defaultAuthenticationPrincipal.getUsername(), StatusType.ACTIVE);
 
-        if (userRepository.toggleStatus(springUser.getUsername(), version, StatusType.DELETED) == 0) {
-            throw new OptimisticLockException("Optimistic lock occurred for user with id: " + springUser.getUsername());
+        if (userRepository.toggleStatus(defaultAuthenticationPrincipal.getUsername(), version,
+                                        StatusType.DELETED) == 0) {
+            throw new OptimisticLockException(
+                    "Optimistic lock occurred for user with id: " + defaultAuthenticationPrincipal.getUsername());
         }
     }
 
@@ -92,7 +97,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Long checkSuchUser(String username, StatusType status) {
-        return userRepository.existsByUsernameAndStatus(username, status)
+        return userRepository.findVersionByUsernameAndStatus(username, status)
                 .orElseThrow(() -> new NotFoundException(username));
     }
 
@@ -101,4 +106,5 @@ public class UserService {
         return userRepository.findByUsernameAndStatus(username, StatusType.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
     }
+
 }

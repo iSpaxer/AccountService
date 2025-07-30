@@ -22,6 +22,17 @@ spring:
     console:
       enabled: true
 
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_ID_OAUTH2}
+            client-secret: ${GITHUB_SECRET_OAUTH2}
+            scope:
+              - user:email
+
 app:
   version: _test
 

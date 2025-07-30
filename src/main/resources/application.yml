@@ -36,9 +36,10 @@ spring:
       client:
         registration:
           github:
-            redirect: ${GITHUB_REDIRECT_OAUTH2}
             client-id: ${GITHUB_ID_OAUTH2}
             client-secret: ${GITHUB_SECRET_OAUTH2}
+            scope:
+              - user:email
 
 app:
   version: ${project.version}
