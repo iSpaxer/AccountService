@@ -7,6 +7,7 @@ import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -15,14 +16,19 @@ import java.util.*;
 
 @Getter
 @Component
+// todo наверное стоит отказаться от buildProperties
 public class ApplicationDataComponent {
 
     private final List<Map<String, String>> technologies;
 
+    @Deprecated
+    private final BuildProperties buildProperties;
+
     @Value("${app.version}")
     private String version;
 
-    public ApplicationDataComponent() {
+    public ApplicationDataComponent(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
         this.technologies = initTechnologies();
     }
 

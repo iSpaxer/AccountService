@@ -12,11 +12,21 @@ public interface EntityMapper {
 
     User mapToEntity(UserDto dto);
 
+
     User map(User entity, UserDto dto);
 
-    List<PostDto> mapToDto(List<Post> entityList);
+    @Deprecated
+    // --------------------------
+    default PostDto mapToDto(Post entity) { // todo
+        return new PostDto(
+                entity.getId(),
+                entity.getMessage(),
+                entity.getCreatedDate(),
+                entity.getLastUpdateDate()
+        );
+    }
 
-    PostDto mapToDto(Post entity);
+    List<PostDto> mapToDto(List<Post> entityList);
 
     Post mapToEntity(PostDto dto);
 

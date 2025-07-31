@@ -10,7 +10,7 @@ spring:
     url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
-    hikari:
+    hikari: # ????????? ???? ?????????? HikariCP
       maximum-pool-size: 10
       minimum-idle: 5
       idle-timeout: 300000
@@ -30,16 +30,6 @@ spring:
     jpa:
       repositories:
         enabled: true
-
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            client-id: ${GITHUB_ID_OAUTH2}
-            client-secret: ${GITHUB_SECRET_OAUTH2}
-            scope:
-              - user:email
 
 app:
   version: ${project.version}

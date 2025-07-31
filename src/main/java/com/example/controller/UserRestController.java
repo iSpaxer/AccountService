@@ -3,8 +3,7 @@ package com.example.controller;
 import com.example.dto.LoginRequest;
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
-import com.example.entity.StatusType;
-import com.example.security.DefaultAuthenticationPrincipal;
+import com.example.security.SpringUser;
 import com.example.service.PostService;
 import com.example.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,8 +42,8 @@ public class UserRestController {
     @GetMapping({"/{id:[1-9]\\d*}", ""})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> getUser(@PathVariable(required = false) Long id,
-                                           @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        UserDto value = userService.getUser(id, defaultAuthenticationPrincipal);
+                                           @AuthenticationPrincipal SpringUser springUser) {
+        UserDto value = userService.getUser(id, springUser);
         return ResponseEntity.ok(value);
     }
 
@@ -53,8 +52,8 @@ public class UserRestController {
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDto> updateUser(@RequestBody UserDto dto,
-                                              @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        return ResponseEntity.ok(userService.updateUser(dto, defaultAuthenticationPrincipal));
+                                              @AuthenticationPrincipal SpringUser springUser) {
+        return ResponseEntity.ok(userService.updateUser(dto, springUser));
     }
 
 
@@ -68,9 +67,8 @@ public class UserRestController {
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> deleteSoft(
-            @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        userService.deleteSoft(defaultAuthenticationPrincipal);
+    public ResponseEntity<?> deleteSoft(@AuthenticationPrincipal SpringUser springUser) {
+        userService.deleteSoft(springUser);
         return ResponseEntity.ok().build();
     }
 
@@ -80,11 +78,9 @@ public class UserRestController {
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @PostMapping("/post/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createPost(@RequestBody PostDto dto,
-                                        @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        userService.checkSuchUser(defaultAuthenticationPrincipal.getId(), StatusType.ACTIVE);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(postService.createPost(dto, defaultAuthenticationPrincipal.getId()));
+    public ResponseEntity<?> createPost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        userService.checkSuchUser(springUser.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto, springUser.getId()));
     }
 
     @GetMapping("/{id:[1-9]\\d*}/posts")
@@ -96,17 +92,16 @@ public class UserRestController {
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @PutMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updatePost(@RequestBody PostDto dto,
-                                        @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        return ResponseEntity.ok(postService.updatePost(dto, defaultAuthenticationPrincipal.getId()));
+    public ResponseEntity<?> updatePost(@RequestBody PostDto dto, @AuthenticationPrincipal SpringUser springUser) {
+        return ResponseEntity.ok(postService.updatePost(dto, springUser.getId()));
     }
 
     @Operation(security = {@SecurityRequirement(name = "JWT")})
     @DeleteMapping("/{id:[1-9]\\d*}/post")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> deletePost(@PathVariable("id") Long userId,
-                                        @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        postService.deletePost(userId, defaultAuthenticationPrincipal.getId());
+                                        @AuthenticationPrincipal SpringUser springUser) {
+        postService.deletePost(userId, springUser.getId());
         return ResponseEntity.ok().build();
     }
 }

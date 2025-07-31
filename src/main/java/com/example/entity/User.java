@@ -1,7 +1,6 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,13 +13,9 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {
-
-    @Email
-    private String email;
 
     @Column(unique = true, updatable = false)
     private String username;
@@ -29,10 +24,6 @@ public class User extends AbstractEntity {
     private String description;
     @OneToMany(mappedBy = "user")
     private List<Post> postList;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "github_id", referencedColumnName = "github_id", unique = true)
-    private GitHubEntity gitHub;
 
     public User(Long id, Long version, StatusType status,
                 LocalDateTime createdDate,
