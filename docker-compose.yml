@@ -8,7 +8,6 @@ services:
     env_file:
       - postgres.env
       - jwt.env
-      - oauth2.env
     ports:
       - "8080:8080"
     restart: always

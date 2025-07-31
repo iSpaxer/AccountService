@@ -13,7 +13,7 @@ public class JwtAuthenticationUserDetailsService
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken authenticationToken)
             throws UsernameNotFoundException {
         if (authenticationToken.getPrincipal() instanceof JwtToken token) {
-            return new DefaultAuthenticationPrincipal(token);
+            return new SpringUser(token);
         }
         throw new UsernameNotFoundException("Principal must me of type Token");
     }

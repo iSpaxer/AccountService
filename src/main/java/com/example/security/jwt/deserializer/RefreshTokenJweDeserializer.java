@@ -29,11 +29,14 @@ public class RefreshTokenJweDeserializer implements Function<String, JwtToken> {
             var claimsSet = encryptedJWT.getJWTClaimsSet();
             return new JwtToken(
                     claimsSet.getLongClaim("id"),
+                    claimsSet.getSubject(),
                     claimsSet.getStringListClaim("authorities"),
                     claimsSet.getIssueTime().toInstant(),
                     claimsSet.getExpirationTime().toInstant());
         } catch (ParseException | JOSEException exception) {
             throw new JsonParseException("Refresh токен не десериализуем");
         }
+
+//        return null;
     }
 }
