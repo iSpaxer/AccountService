@@ -10,7 +10,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      skip: ${{ steps.check.outputs.skip }}
+      skip: ${{ steps.check-step.outputs.skip }}
     steps:
       - name: Check author and branch
         id: check-step
@@ -103,6 +103,6 @@ jobs:
           ssh -i ~/.ssh/id_rsa spaxer@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/spaxer/application/AuthService
             docker load -i auth-service.tar
-            docker compose up -d
+            docker compose up -d --no-build
           EOF
 

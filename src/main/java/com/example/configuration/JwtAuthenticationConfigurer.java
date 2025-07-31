@@ -12,10 +12,7 @@ import com.example.security.jwt.factory.AuthenticationJwtResponseMapper;
 import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -37,25 +34,24 @@ import java.util.function.Function;
  * Конфигурация JWT фильтров для Spring Security
  */
 @Builder
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true) //todo убрать
 public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthenticationConfigurer, HttpSecurity> {
-    JwtUserDetailsService userDetailsService;
-    PasswordEncoder passwordEncoder;
+    private final JwtUserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
-    Function<Authentication, JwtToken> jwtRefreshFactory;
-    Function<JwtToken, JwtToken> jwtAccessFactory;
+    private final Function<Authentication, JwtToken> jwtRefreshFactory;
+    private final Function<JwtToken, JwtToken> jwtAccessFactory;
 
-    Function<JwtToken, String> accessTokenSerializer;
-    Function<JwtToken, String> refreshTokenSerializer;
+    private final Function<JwtToken, String> accessTokenSerializer;
+    private final Function<JwtToken, String> refreshTokenSerializer;
 
 
-    Function<String, JwtToken> accessTokenDeserializer;
-    Function<String, JwtToken> refreshTokenDeserializer;
+    private final Function<String, JwtToken> accessTokenDeserializer;
+    private final Function<String, JwtToken> refreshTokenDeserializer;
 
-    HandlerExceptionResolver handlerExceptionResolver;
-    ObjectMapper objectMapper;
-    ApplicationDataComponent applicationDataComponent;
+    private final HandlerExceptionResolver handlerExceptionResolver;
+    private final ObjectMapper objectMapper;
+    private final ApplicationDataComponent applicationDataComponent;
+    private final AuthenticationJwtResponseMapper authenticationJwtResponseMapper;
 
     @Override
     public void configure(HttpSecurity builder) {
@@ -66,12 +62,7 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         var jwtLoginFilter = new JwtLoginFilter(
                 applicationDataComponent,
                 daoAuthenticationProvider,
-                AuthenticationJwtResponseMapper.builder()
-                        .jwtRefreshFactory(jwtRefreshFactory)
-                        .jwtAccessFactory(jwtAccessFactory)
-                        .accessTokenSerializer(accessTokenSerializer)
-                        .refreshTokenSerializer(refreshTokenSerializer)
-                        .build()
+                authenticationJwtResponseMapper
         );
 
         var jwtRefreshFilter = new JwtRefreshFilter(
@@ -100,7 +91,6 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
                 });
 
 
-        // todo переделать фильтр
         var authenticationProvider = new PreAuthenticatedAuthenticationProvider();
         authenticationProvider.setPreAuthenticatedUserDetailsService(
                 new JwtAuthenticationUserDetailsService());
@@ -108,7 +98,8 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         builder
                 .addFilterAfter(jwtLoginFilter, BasicAuthenticationFilter.class)
                 .addFilterAfter(jwtRefreshFilter, JwtLoginFilter.class)
-                .addFilterBefore(new JwtExceptionHandlerFilter(handlerExceptionResolver, objectMapper), JwtLoginFilter.class)
+                .addFilterBefore(new JwtExceptionHandlerFilter(handlerExceptionResolver, objectMapper),
+                                 JwtLoginFilter.class)
                 .addFilterAfter(jwtAuthenticationFilter, CsrfFilter.class)
                 .authenticationProvider(authenticationProvider)
                 .authenticationProvider(daoAuthenticationProvider);

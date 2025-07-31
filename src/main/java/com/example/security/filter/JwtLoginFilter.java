@@ -31,19 +31,22 @@ public class JwtLoginFilter extends OncePerRequestFilter {
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final Function<Authentication, JwtResponse> authenticationJwtResponseMapper;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final RequestMatcher requestMatcher;
 
-    public JwtLoginFilter(ApplicationDataComponent dataComponent, DaoAuthenticationProvider daoAuthenticationProvider, Function<Authentication, JwtResponse> authenticationJwtResponseMapper) {
+    public JwtLoginFilter(ApplicationDataComponent dataComponent, DaoAuthenticationProvider daoAuthenticationProvider,
+                          Function<Authentication, JwtResponse> authenticationJwtResponseMapper) {
         this.dataComponent = dataComponent;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.authenticationJwtResponseMapper = authenticationJwtResponseMapper;
-        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/login"), HttpMethod.POST.name());
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/login"),
+                                                        HttpMethod.POST.name());
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws IOException, ServletException {
         if (this.requestMatcher.matches(request)) {
             var authentication = new CustomAuthenticationConverter().convert(request);
             Authentication authenticate;

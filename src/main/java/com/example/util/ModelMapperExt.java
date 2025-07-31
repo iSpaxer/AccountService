@@ -43,6 +43,11 @@ public class ModelMapperExt extends ModelMapper implements EntityMapper {
     }
 
     @Override
+    public PostDto mapToDto(Post entity) {
+        return new PostDto(entity.getId(), entity.getMessage(), entity.getCreatedDate(), entity.getLastUpdateDate());
+    }
+
+    @Override
     public Post mapToEntity(PostDto dto) {
         return this.map(dto, Post.class);
     }
