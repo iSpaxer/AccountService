@@ -14,7 +14,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.*;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,16 +25,37 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-
-        var openApi = new OpenAPI()
+        return new OpenAPI()
                 .info(new Info().title("Your API").version("1.0.0"))
                 .components(new Components()
-                        .addSecuritySchemes("JWT", // todo ?
-                                new SecurityScheme().type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT"))
-                );
-        return openApi;
+                                    // JWT
+                                    .addSecuritySchemes("JWT", new SecurityScheme()
+                                            .type(SecurityScheme.Type.HTTP)
+                                            .scheme("bearer")
+                                            .bearerFormat("JWT"))
+                                    // OAuth2 (GitHub)
+                                    .addSecuritySchemes("GitHub", new SecurityScheme()
+                                            .type(SecurityScheme.Type.OAUTH2)
+                                            .flows(new OAuthFlows()
+                                                           .authorizationCode(new OAuthFlow()
+                                                                                      .authorizationUrl(
+                                                                                              "/oauth2/authorization/github")
+                                                                                      .tokenUrl(
+                                                                                              "https://github.com/login/oauth/access_token")
+                                                                                      .scopes(new Scopes()
+                                                                                                      .addString(
+                                                                                                              "user:email",
+                                                                                                              "Access user email")
+                                                                                                      .addString(
+                                                                                                              "read:user",
+                                                                                                              "Read user info")
+                                                                                      )
+                                                           )
+                                            )
+                                    )
+                )
+                .addSecurityItem(new SecurityRequirement().addList("JWT"))
+                .addSecurityItem(new SecurityRequirement().addList("oauth2"));
     }
 
     @Bean
@@ -48,48 +69,57 @@ public class SwaggerConfig {
             openApi
                     .path(dataComponent.glueEndpoint("/jwt/login"), new PathItem()
                             .post(new Operation()
-                                    .summary("Вход в админ панель.")
-                                    .addTagsItem("Admin")
-                                    .requestBody(new RequestBody()
-                                            .content(new Content().addMediaType(
-                                                            org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                                                            new MediaType().schema(new Schema<LoginRequest>()
-                                                                    .$ref("#/components/schemas/LoginRequest"))
-                                                    )
-                                            )
-                                    )
-                                    .responses(new ApiResponses()
-                                            .addApiResponse("201", new ApiResponse()
-                                                    .description("Successful login!")
-                                                    .content(new Content().addMediaType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                                                            new MediaType().schema(new Schema<String>().example("Login successful")))))
-                                            .addApiResponse("400", new ApiResponse()
-                                                    .description("Bad request"))
-                                            .addApiResponse("500", new ApiResponse()
-                                                    .description("INNER SERVER ERROR"))
-                                    )
+                                          .summary("Вход в админ панель.")
+                                          .addTagsItem("Admin")
+                                          .requestBody(new RequestBody()
+                                                               .content(new Content().addMediaType(
+                                                                                org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                                                                                new MediaType().schema(new Schema<LoginRequest>()
+                                                                                                               .$ref("#/components/schemas/LoginRequest"))
+                                                                        )
+                                                               )
+                                          )
+                                          .responses(new ApiResponses()
+                                                             .addApiResponse("201", new ApiResponse()
+                                                                     .description("Successful login!")
+                                                                     .content(new Content().addMediaType(
+                                                                             org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                                                                             new MediaType().schema(
+                                                                                     new Schema<String>().example(
+                                                                                             "Login successful")))))
+                                                             .addApiResponse("400", new ApiResponse()
+                                                                     .description("Bad request"))
+                                                             .addApiResponse("500", new ApiResponse()
+                                                                     .description("INNER SERVER ERROR"))
+                                          )
                             ))
                     .path(dataComponent.glueEndpoint("/jwt/refresh"), new PathItem()
                             .post(new Operation()
-                                    .summary("Получить новый access и refresh токен.")
-                                    .addTagsItem("Admin")
-                                    .requestBody(new RequestBody()
-                                            .content(new Content().addMediaType(
-                                                            org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                                                            new MediaType().schema(new Schema().addProperty("refresh", new Schema<String>().description("Refresh token")))
-                                                    )
-                                            )
-                                    )
-                                    .responses(new ApiResponses()
-                                            .addApiResponse("200", new ApiResponse()
-                                                    .description("Successful login!")
-                                                    .content(new Content().addMediaType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                                                            new MediaType().schema(new Schema<String>().example("Login successful")))))
-                                            .addApiResponse("400", new ApiResponse()
-                                                    .description("Bad request"))
-                                            .addApiResponse("500", new ApiResponse()
-                                                    .description("INNER SERVER ERROR"))
-                                    )
+                                          .summary("Получить новый access и refresh токен.")
+                                          .addTagsItem("Admin")
+                                          .requestBody(new RequestBody()
+                                                               .content(new Content().addMediaType(
+                                                                                org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                                                                                new MediaType().schema(
+                                                                                        new Schema().addProperty("refresh",
+                                                                                                                 new Schema<String>().description(
+                                                                                                                         "Refresh token")))
+                                                                        )
+                                                               )
+                                          )
+                                          .responses(new ApiResponses()
+                                                             .addApiResponse("200", new ApiResponse()
+                                                                     .description("Successful login!")
+                                                                     .content(new Content().addMediaType(
+                                                                             org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                                                                             new MediaType().schema(
+                                                                                     new Schema<String>().example(
+                                                                                             "Login successful")))))
+                                                             .addApiResponse("400", new ApiResponse()
+                                                                     .description("Bad request"))
+                                                             .addApiResponse("500", new ApiResponse()
+                                                                     .description("INNER SERVER ERROR"))
+                                          )
                             ));
 
         });

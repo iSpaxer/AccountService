@@ -37,17 +37,22 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RequestMatcher requestMatcher;
 
-    public JwtRefreshFilter(ApplicationDataComponent dataComponent, Function<String, JwtToken> refreshDeserializer, Function<JwtToken, JwtToken> jwtAccessFactory, Function<JwtToken, String> accessTokenSerializer, Function<JwtToken, String> refreshTokenSerializer) {
+    public JwtRefreshFilter(ApplicationDataComponent dataComponent, Function<String, JwtToken> refreshDeserializer,
+                            Function<JwtToken, JwtToken> jwtAccessFactory,
+                            Function<JwtToken, String> accessTokenSerializer,
+                            Function<JwtToken, String> refreshTokenSerializer) {
         this.dataComponent = dataComponent;
         this.refreshDeserializer = refreshDeserializer;
         this.jwtAccessFactory = jwtAccessFactory;
         this.accessTokenSerializer = accessTokenSerializer;
         this.refreshTokenSerializer = refreshTokenSerializer;
-        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/refresh"), HttpMethod.POST.name());
+        this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/refresh"),
+                                                        HttpMethod.POST.name());
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         if (this.requestMatcher.matches(request)) {
             var refreshTokenStr = refreshJwtConverter.apply(request);
             var refreshToken = refreshDeserializer.apply(refreshTokenStr);
@@ -70,7 +75,6 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
     private JwtResponse getJwtResponse(JwtToken refreshToken, String refreshTokenStr) {
         var new_refreshToken = new JwtToken(
                 refreshToken.id(),
-                refreshToken.username(),
                 refreshToken.authorities(),
                 Instant.now(), Instant.now().plus(DefaultJwtRefreshTokenFactory.REFRESH_TOKEN_Ttl));
 

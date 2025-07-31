@@ -37,7 +37,7 @@ public class CustomAuthenticationConverter implements AuthenticationConverter {
         var password = jsonMap.get("password");
 
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            throw new BadCredentialsException("Пароль или логин пусты."); // todo не пробрасывается исключение в филь
+            throw new BadCredentialsException("Пароль или логин пусты.");
         }
         return new UsernamePasswordAuthenticationToken(email, password);
     }

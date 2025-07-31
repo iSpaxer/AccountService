@@ -5,9 +5,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jwt.SignedJWT;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
@@ -16,11 +14,10 @@ import java.util.function.Function;
 
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AccessTokenJwsDeserializer implements Function<String, JwtToken> {
 
-    JWSVerifier jwsVerifier;
-    JWSAlgorithm jwsAlgorithm;
+    private final JWSVerifier jwsVerifier;
+    private final JWSAlgorithm jwsAlgorithm;
 
     public AccessTokenJwsDeserializer(JWSVerifier jwsVerifier) {
         this.jwsVerifier = jwsVerifier;
@@ -35,7 +32,6 @@ public class AccessTokenJwsDeserializer implements Function<String, JwtToken> {
                 var jwtClaimsSet = signedJWT.getJWTClaimsSet();
                 return new JwtToken(
                         jwtClaimsSet.getLongClaim("id"),
-                        jwtClaimsSet.getSubject(),
                         jwtClaimsSet.getStringListClaim("authorities"),
                         jwtClaimsSet.getIssueTime().toInstant(),
                         jwtClaimsSet.getExpirationTime().toInstant()
