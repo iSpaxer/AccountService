@@ -16,6 +16,8 @@ public interface EntityMapper {
 
     List<PostDto> mapToDto(List<Post> entityList);
 
+    PostDto mapToDto(Post entity);
+
     Post mapToEntity(PostDto dto);
 
     List<Post> mapToEntity(List<PostDto> dtoList);
