@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.dto.LoginRequest;
 import com.example.dto.PostDto;
 import com.example.dto.UserDto;
+import com.example.entity.StatusType;
 import com.example.security.DefaultAuthenticationPrincipal;
 import com.example.service.PostService;
 import com.example.service.UserService;
@@ -81,7 +82,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createPost(@RequestBody PostDto dto,
                                         @AuthenticationPrincipal DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        userService.checkSuchUser(defaultAuthenticationPrincipal.getId());
+        userService.checkSuchUser(defaultAuthenticationPrincipal.getId(), StatusType.ACTIVE);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(postService.createPost(dto, defaultAuthenticationPrincipal.getId()));
     }

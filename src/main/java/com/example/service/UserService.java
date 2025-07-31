@@ -74,12 +74,12 @@ public class UserService {
 
     @Transactional
     public void deleteSoft(DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
-        var version = checkSuchUser(defaultAuthenticationPrincipal.getUsername(), StatusType.ACTIVE);
+        var version = checkSuchUser(defaultAuthenticationPrincipal.getId(), StatusType.ACTIVE);
 
-        if (userRepository.toggleStatus(defaultAuthenticationPrincipal.getUsername(), version,
+        if (userRepository.toggleStatus(defaultAuthenticationPrincipal.getId(), version,
                                         StatusType.DELETED) == 0) {
             throw new OptimisticLockException(
-                    "Optimistic lock occurred for user with id: " + defaultAuthenticationPrincipal.getUsername());
+                    "Optimistic lock occurred for user with id: " + defaultAuthenticationPrincipal.getId());
         }
     }
 
@@ -91,14 +91,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Long checkSuchUser(Long id) {
-        return userRepository.existsByIdAndStatus(id, StatusType.ACTIVE).orElseThrow(() -> new NotFoundException(id));
-    }
-
-    @Transactional(readOnly = true)
-    public Long checkSuchUser(String username, StatusType status) {
-        return userRepository.findVersionByUsernameAndStatus(username, status)
-                .orElseThrow(() -> new NotFoundException(username));
+    public Long checkSuchUser(Long id, StatusType statusType) {
+        return userRepository.existsByIdAndStatus(id, statusType).orElseThrow(() -> new NotFoundException(id));
     }
 
     @Transactional(readOnly = true)
