@@ -91,7 +91,6 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
                 });
 
 
-        // todo переделать фильтр
         var authenticationProvider = new PreAuthenticatedAuthenticationProvider();
         authenticationProvider.setPreAuthenticatedUserDetailsService(
                 new JwtAuthenticationUserDetailsService());

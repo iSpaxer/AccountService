@@ -21,6 +21,7 @@ public class User extends AbstractEntity {
 
     @Email
     private String email;
+
     @Column(unique = true, updatable = false)
     private String username;
     @Column(nullable = false)
@@ -32,7 +33,6 @@ public class User extends AbstractEntity {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "github_id", referencedColumnName = "github_id", unique = true)
     private GitHubEntity gitHub;
-
 
     public User(Long id, Long version, StatusType status,
                 LocalDateTime createdDate,

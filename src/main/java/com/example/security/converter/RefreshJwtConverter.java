@@ -34,7 +34,7 @@ public class RefreshJwtConverter implements Function<HttpServletRequest, String>
         var refresh = jsonMap.get("refresh");
 
         if (refresh == null || refresh.isEmpty()) {
-            throw new BadCredentialsException("Пароль или логин пусты."); // todo не пробрасывается исключение в филь
+            throw new BadCredentialsException("Пароль или логин пусты.");
         }
         return refresh;
     }

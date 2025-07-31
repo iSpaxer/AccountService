@@ -10,7 +10,7 @@ spring:
     url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
-    hikari: # ????????? ???? ?????????? HikariCP
+    hikari:
       maximum-pool-size: 10
       minimum-idle: 5
       idle-timeout: 300000
