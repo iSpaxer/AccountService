@@ -17,3 +17,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           target-branch: develop
           repo-url: ${{ github.repository }}
+          snapshot: false
+          changelog-path: CHANGELOG.md
