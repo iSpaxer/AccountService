@@ -10,7 +10,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      skip: ${{ steps.check.outputs.skip }}
+      skip: ${{ steps.check-step.outputs.skip }}
     steps:
       - name: Check author and branch
         id: check-step
