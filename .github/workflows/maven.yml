@@ -17,10 +17,10 @@ jobs:
         run: |
           echo "Actor: ${{ github.actor }}"
           echo "Ref: ${{ github.ref }}"
-          
-          if [ "${{ github.actor }}" = "github-actions[bot]" ] || [[ "${{ github.ref }}" == "refs/heads/release-please--branches--develop" ]]; then
-            echo "Detected bot push or release-please branch — skipping CI."
-            echo "skip=true" >> $GITHUB_OUTPUT
+
+          if [[ "${{ github.ref }}" == "refs/heads/release-please--branches--develop" ]]; then
+            echo "Release Please branch — allow CI to run."
+            echo "skip=false" >> $GITHUB_OUTPUT
           else
             echo "CI should run."
             echo "skip=false" >> $GITHUB_OUTPUT
