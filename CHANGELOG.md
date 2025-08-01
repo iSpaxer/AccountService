@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1](https://github.com/iSpaxer/AccountService/compare/v1.3.0...v1.3.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* Ci/Cd ([#45](https://github.com/iSpaxer/AccountService/issues/45)) ([0549dec](https://github.com/iSpaxer/AccountService/commit/0549decfdff725490cf153b988c196d4a849a7b8))
+* trigger CI ([#43](https://github.com/iSpaxer/AccountService/issues/43)) ([5b9071b](https://github.com/iSpaxer/AccountService/commit/5b9071b787d86c9581d155e00704d993edb3719b))
+* Исправление бага при деплое ([#44](https://github.com/iSpaxer/AccountService/issues/44)) ([7cbeeda](https://github.com/iSpaxer/AccountService/commit/7cbeeda24a66141850ac7bcefa3e26a8ac2635ed))
+
 ## [1.3.0](https://github.com/iSpaxer/AccountService/compare/v1.2.2...v1.3.0) (2025-07-31)
 
 ### Features
