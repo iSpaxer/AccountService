@@ -1,0 +1,19 @@
+releaseType: java
+packageName: com.example.AuthenticationService
+changelogPath: CHANGELOG.md
+versionFile: pom.xml
+branches:
+  - branch: main
+    release: true
+  - branch: develop
+    prerelease: true
+changelogTypes:
+  - type: feat
+    section: Features
+    hidden: false
+  - type: fix
+    section: Bug Fixes
+    hidden: false
+  - type: chore
+    section: Miscellaneous
+    hidden: false
