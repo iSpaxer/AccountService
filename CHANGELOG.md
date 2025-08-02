@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0](https://github.com/iSpaxer/AccountService/compare/v1.2.2...v1.3.0) (2025-08-02)
+
+
+### Features
+
+* OAuth2 ([1806ca0](https://github.com/iSpaxer/AccountService/commit/1806ca0e2145f20ac2a6d9b96ec59b71939bd3ba))
+* OAuth2 ([#35](https://github.com/iSpaxer/AccountService/issues/35)) ([6d48cee](https://github.com/iSpaxer/AccountService/commit/6d48cee8bfe8c80b3abbd539b62e7c4a6ae93cdd))
+* oauth2 added ([272d033](https://github.com/iSpaxer/AccountService/commit/272d033f1374c557bad95a81952dc57a2669036d))
+* тестовый коммит для релиза ([94445ac](https://github.com/iSpaxer/AccountService/commit/94445ac4915513bb7142a1a32b0f51ee59cf7013))
+* тестовый коммит для релиза ([7a660d9](https://github.com/iSpaxer/AccountService/commit/7a660d9e7b19262fcde2f3f22af421a0ed4144e7))
+
 ## [1.2.2](https://github.com/iSpaxer/AccountService/compare/v1.2.1...v1.2.2) (2025-07-22)
 
 
