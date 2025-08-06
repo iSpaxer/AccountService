@@ -7,12 +7,14 @@ import com.example.security.JwtUserDetailsService;
 import com.example.security.converter.AccessJwtAuthenticationConverter;
 import com.example.security.filter.JwtExceptionHandlerFilter;
 import com.example.security.filter.JwtLoginFilter;
+import com.example.security.filter.JwtLogoutFilter;
 import com.example.security.filter.JwtRefreshFilter;
 import com.example.security.jwt.factory.AuthenticationJwtResponseMapper;
+import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,7 +35,7 @@ import java.util.function.Function;
 /**
  * Конфигурация JWT фильтров для Spring Security
  */
-@Builder
+@RequiredArgsConstructor
 public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthenticationConfigurer, HttpSecurity> {
     private final JwtUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -50,8 +52,10 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
 
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final ObjectMapper objectMapper;
-    private final ApplicationDataComponent applicationDataComponent;
+    private final ApplicationDataComponent dataComponent;
     private final AuthenticationJwtResponseMapper authenticationJwtResponseMapper;
+
+    private final JwtRedisService jwtRedisService;
 
     @Override
     public void configure(HttpSecurity builder) {
@@ -60,13 +64,13 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
 
         var jwtLoginFilter = new JwtLoginFilter(
-                applicationDataComponent,
+                dataComponent,
                 daoAuthenticationProvider,
                 authenticationJwtResponseMapper
         );
 
         var jwtRefreshFilter = new JwtRefreshFilter(
-                applicationDataComponent,
+                dataComponent,
                 refreshTokenDeserializer,
                 jwtAccessFactory,
                 accessTokenSerializer,
@@ -75,7 +79,7 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
 
         var jwtAuthenticationFilter = new AuthenticationFilter(
                 builder.getSharedObject(AuthenticationManager.class),
-                new AccessJwtAuthenticationConverter(accessTokenDeserializer, refreshTokenDeserializer)
+                new AccessJwtAuthenticationConverter(accessTokenDeserializer, refreshTokenDeserializer, jwtRedisService)
         );
 
         jwtAuthenticationFilter
@@ -95,12 +99,15 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
         authenticationProvider.setPreAuthenticatedUserDetailsService(
                 new JwtAuthenticationUserDetailsService());
 
+        var jwtLogoutFilter = new JwtLogoutFilter(dataComponent, jwtRedisService);
+
         builder
                 .addFilterAfter(jwtLoginFilter, BasicAuthenticationFilter.class)
                 .addFilterAfter(jwtRefreshFilter, JwtLoginFilter.class)
                 .addFilterBefore(new JwtExceptionHandlerFilter(handlerExceptionResolver, objectMapper),
                                  JwtLoginFilter.class)
                 .addFilterAfter(jwtAuthenticationFilter, CsrfFilter.class)
+                .addFilterAfter(jwtLogoutFilter, AuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider)
                 .authenticationProvider(daoAuthenticationProvider);
 

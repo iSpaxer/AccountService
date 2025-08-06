@@ -6,6 +6,7 @@ import com.example.security.jwt.deserializer.RefreshTokenJweDeserializer;
 import com.example.security.jwt.factory.*;
 import com.example.security.jwt.serializer.AccessTokenJwsSerializer;
 import com.example.security.jwt.serializer.RefreshTokenJweSerializer;
+import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
@@ -64,7 +65,8 @@ public class JwtCommonConfig {
             HandlerExceptionResolver handlerExceptionResolver,
             ObjectMapper objectMapper,
             ApplicationDataComponent applicationDataComponent,
-            AuthenticationJwtResponseMapper authenticationJwtResponseMapper) {
+            AuthenticationJwtResponseMapper authenticationJwtResponseMapper,
+            JwtRedisService jwtRedisService) {
         return new JwtAuthenticationConfigurer(
                 jwtUserDetailsService,
                 passwordEncoder,
@@ -77,7 +79,8 @@ public class JwtCommonConfig {
                 handlerExceptionResolver,
                 objectMapper,
                 applicationDataComponent,
-                authenticationJwtResponseMapper
+                authenticationJwtResponseMapper,
+                jwtRedisService
         );
     }
 

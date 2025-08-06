@@ -1,12 +1,14 @@
 package com.example.security;
 
 import com.example.dto.jwt.JwtToken;
+import lombok.Getter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.time.Instant;
 
 
+@Getter
 public class DefaultAuthenticationPrincipal extends User {
 
     private final JwtToken token;
@@ -23,4 +25,5 @@ public class DefaultAuthenticationPrincipal extends User {
     public Long getId() {
         return token.id();
     }
+
 }
