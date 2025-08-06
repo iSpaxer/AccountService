@@ -49,12 +49,13 @@ public class JwtCommonConfig {
     }
 
     @Bean
-    public AuthenticationJwtResponseMapper authenticationJwtResponseMapper() {
+    public AuthenticationJwtResponseMapper authenticationJwtResponseMapper(JwtRedisService jwtRedisService) {
         return AuthenticationJwtResponseMapper.builder()
                 .jwtRefreshFactory(jwtRefreshTokenFactory)
                 .jwtAccessFactory(jwtAccessTokenFactory)
                 .accessTokenSerializer(accessTokenJwsSerializer)
                 .refreshTokenSerializer(refreshTokenJweSerializer)
+                .jwtRedisService(jwtRedisService)
                 .build();
     }
 
