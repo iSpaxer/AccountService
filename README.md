@@ -8,7 +8,8 @@ Creating users and posts.
 - Spring Boot 3.5.0
 - Hibernate
 - PostgreSQL
-- JWT
+- Redis
+- JWT (Redis logout)
 - OAuth2 (github)
 - Swagger
 - Maven
