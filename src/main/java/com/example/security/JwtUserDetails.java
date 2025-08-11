@@ -1,17 +1,20 @@
 package com.example.security;
 
 import com.example.entity.User;
-import com.example.security.auth.AuthPrincipalWithId;
+import com.example.security.auth.AuthPrincipalAbstractIdentifier;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class JwtUserDetails extends User implements UserDetails, AuthPrincipalWithId {
+public class JwtUserDetails extends User implements UserDetails, AuthPrincipalAbstractIdentifier {
 
-    public JwtUserDetails(Long id, String username, @NotNull String password) {
+    private final String jti;
+
+    public JwtUserDetails(Long id, String username, @NotNull String password, String jti) {
         super(id, username, password);
+        this.jti = jti;
     }
 
     @Override
@@ -19,4 +22,9 @@ public class JwtUserDetails extends User implements UserDetails, AuthPrincipalWi
         return null;
     }
 
+
+    @Override
+    public String getJti() {
+        return jti;
+    }
 }

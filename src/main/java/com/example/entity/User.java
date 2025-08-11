@@ -14,7 +14,6 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User extends AbstractEntity {

@@ -12,6 +12,7 @@ import com.example.security.filter.JwtRefreshFilter;
 import com.example.security.jwt.factory.AuthenticationJwtResponseMapper;
 import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
+import com.example.util.exception.entrypoint.ForbiddenEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +57,10 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
     private final AuthenticationJwtResponseMapper authenticationJwtResponseMapper;
 
     private final JwtRedisService jwtRedisService;
+    private final ForbiddenEntryPoint forbiddenEntryPoint;
 
     @Override
-    public void configure(HttpSecurity builder) {
+    public void configure(HttpSecurity http) throws Exception {
         var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
@@ -74,11 +76,11 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
                 refreshTokenDeserializer,
                 jwtAccessFactory,
                 accessTokenSerializer,
-                refreshTokenSerializer
-        );
+                refreshTokenSerializer,
+                jwtRedisService);
 
         var jwtAuthenticationFilter = new AuthenticationFilter(
-                builder.getSharedObject(AuthenticationManager.class),
+                http.getSharedObject(AuthenticationManager.class),
                 new AccessJwtAuthenticationConverter(accessTokenDeserializer, refreshTokenDeserializer, jwtRedisService)
         );
 
@@ -101,7 +103,10 @@ public class JwtAuthenticationConfigurer extends AbstractHttpConfigurer<JwtAuthe
 
         var jwtLogoutFilter = new JwtLogoutFilter(dataComponent, jwtRedisService);
 
-        builder
+        http
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(forbiddenEntryPoint)
+                )
                 .addFilterAfter(jwtLoginFilter, BasicAuthenticationFilter.class)
                 .addFilterAfter(jwtRefreshFilter, JwtLoginFilter.class)
                 .addFilterBefore(new JwtExceptionHandlerFilter(handlerExceptionResolver, objectMapper),

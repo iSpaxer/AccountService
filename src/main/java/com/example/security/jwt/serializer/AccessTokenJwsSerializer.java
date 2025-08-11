@@ -31,9 +31,9 @@ public class AccessTokenJwsSerializer implements Function<JwtToken, String> {
     @Override
     public String apply(JwtToken token) {
         var jwsHeader = new JWSHeader.Builder(algorithm)
-                .customParam("custom", "value")
                 .build();
         var jwsClaims = new JWTClaimsSet.Builder()
+                .jwtID(token.jti())
                 .issueTime(Date.from(token.createdAt()))
                 .expirationTime(Date.from(token.expiresAt()))
                 .claim("authorities", token.authorities())

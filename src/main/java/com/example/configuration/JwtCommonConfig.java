@@ -8,6 +8,7 @@ import com.example.security.jwt.serializer.AccessTokenJwsSerializer;
 import com.example.security.jwt.serializer.RefreshTokenJweSerializer;
 import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
+import com.example.util.exception.entrypoint.ForbiddenEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.DirectDecrypter;
@@ -59,6 +60,7 @@ public class JwtCommonConfig {
                 .build();
     }
 
+
     @Bean
     public JwtAuthenticationConfigurer jwtAuthenticationConfigurer(
             JwtUserDetailsService jwtUserDetailsService,
@@ -67,7 +69,8 @@ public class JwtCommonConfig {
             ObjectMapper objectMapper,
             ApplicationDataComponent applicationDataComponent,
             AuthenticationJwtResponseMapper authenticationJwtResponseMapper,
-            JwtRedisService jwtRedisService) {
+            JwtRedisService jwtRedisService,
+            ForbiddenEntryPoint forbiddenEntryPoint) {
         return new JwtAuthenticationConfigurer(
                 jwtUserDetailsService,
                 passwordEncoder,
@@ -81,7 +84,8 @@ public class JwtCommonConfig {
                 objectMapper,
                 applicationDataComponent,
                 authenticationJwtResponseMapper,
-                jwtRedisService
+                jwtRedisService,
+                forbiddenEntryPoint
         );
     }
 

@@ -32,9 +32,9 @@ public class RefreshTokenJweSerializer implements Function<JwtToken, String> {
     @Override
     public String apply(JwtToken token) {
         var jweHeader = new JWEHeader.Builder(jweAlgorithm, encryptionMethod)
-                .customParam("custom", "value")
                 .build();
         var jwsClaims = new JWTClaimsSet.Builder()
+                .jwtID(token.jti())
                 .issueTime(Date.from(token.createdAt()))
                 .expirationTime(Date.from(token.expiresAt()))
                 .claim("authorities", token.authorities())

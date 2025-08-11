@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
@@ -47,6 +48,7 @@ public class GitHubOAuth2Service implements ExternalOAuth2Handler {
     }
 
     @Override
+    @Transactional
     public OAuth2User handle(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
         Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes());
         Long githubId = ((Integer) attributes.get("id")).longValue();
@@ -87,7 +89,8 @@ public class GitHubOAuth2Service implements ExternalOAuth2Handler {
                 oAuth2User.getAuthorities(),
                 attributes,
                 "id",
-                user.getId()
+                user.getId(),
+                UserService.generateJti()
         );
     }
 

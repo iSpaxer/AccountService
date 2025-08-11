@@ -2,6 +2,7 @@ package com.example.security.converter;
 
 import com.example.dto.jwt.JwtToken;
 import com.example.service.JwtRedisService;
+import com.example.util.exception.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
@@ -35,10 +36,10 @@ public class AccessJwtAuthenticationConverter implements AuthenticationConverter
             String token = authorization.replace("Bearer ", "");
             JwtToken accessToken = this.accessTokenStringDeserializer.apply(token);
             if (accessToken != null) {
-                if (jwtRedisService.checkForAccess(token)) {
+                if (jwtRedisService.checkForAccess(accessToken)) {
                     return new PreAuthenticatedAuthenticationToken(accessToken, token);
                 } else {
-                    return null;
+                    throw new ForbiddenException("Jwt not valid");
                 }
             }
 

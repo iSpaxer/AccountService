@@ -5,6 +5,7 @@ import com.example.dto.jwt.JwtToken;
 import com.example.security.converter.RefreshJwtConverter;
 import com.example.security.jwt.factory.DefaultJwtRefreshTokenFactory;
 import com.example.security.jwt.util.GiveAwayRefreshToken;
+import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.JsonParseException;
@@ -36,11 +37,12 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
     private final Function<HttpServletRequest, String> refreshJwtConverter = new RefreshJwtConverter();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RequestMatcher requestMatcher;
+    private final JwtRedisService jwtRedisService;
 
     public JwtRefreshFilter(ApplicationDataComponent dataComponent, Function<String, JwtToken> refreshDeserializer,
                             Function<JwtToken, JwtToken> jwtAccessFactory,
                             Function<JwtToken, String> accessTokenSerializer,
-                            Function<JwtToken, String> refreshTokenSerializer) {
+                            Function<JwtToken, String> refreshTokenSerializer, JwtRedisService jwtRedisService) {
         this.dataComponent = dataComponent;
         this.refreshDeserializer = refreshDeserializer;
         this.jwtAccessFactory = jwtAccessFactory;
@@ -48,6 +50,7 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
         this.refreshTokenSerializer = refreshTokenSerializer;
         this.requestMatcher = new AntPathRequestMatcher(dataComponent.glueEndpoint("/jwt/refresh"),
                                                         HttpMethod.POST.name());
+        this.jwtRedisService = jwtRedisService;
     }
 
     @Override
@@ -73,8 +76,10 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
 
     @NotNull
     private JwtResponse getJwtResponse(JwtToken refreshToken, String refreshTokenStr) {
+        // новому refresh назначаем новый Jti
         var new_refreshToken = new JwtToken(
                 refreshToken.id(),
+                jwtRedisService.updateJti(refreshToken),
                 refreshToken.authorities(),
                 Instant.now(), Instant.now().plus(DefaultJwtRefreshTokenFactory.REFRESH_TOKEN_Ttl));
 

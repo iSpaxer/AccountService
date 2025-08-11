@@ -17,11 +17,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final EntityMapper mapper;
     private final PasswordEncoder passwordEncoder;
+
+    public static String generateJti() {
+        return UUID.randomUUID().toString();
+    }
 
     @Autowired
     public UserService(UserRepository repository, EntityMapper mapper, PasswordEncoder passwordEncoder) {
@@ -87,7 +93,7 @@ public class UserService {
     public JwtUserDetails getUserDetailsByUsername(String username) {
         var user = getByUsername(username);
 
-        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword());
+        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword(), generateJti());
     }
 
     @Transactional(readOnly = true)
@@ -100,5 +106,6 @@ public class UserService {
         return userRepository.findByUsernameAndStatus(username, StatusType.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
     }
+
 
 }
