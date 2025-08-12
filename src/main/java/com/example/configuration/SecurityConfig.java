@@ -38,7 +38,9 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/info").permitAll()
-                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints("/user", "/user/**")).permitAll()
+                        .requestMatchers(HttpMethod.GET, appData.glueEndpoints(
+                                "/user", "/user/**", "/jwt/login", "/jwt/refresh"
+                        )).permitAll()
                         .requestMatchers(appData.glueEndpoints("/user/create", "/user/restore")).anonymous()
                         .requestMatchers(appData.glueEndpoints("/user", "/user/**")).authenticated()
                 )

@@ -1,6 +1,8 @@
 package com.example.security.filter;
 
 import com.example.dto.ExceptionBody;
+import com.example.util.exception.BadRequestException;
+import com.example.util.exception.ForbiddenException;
 import com.example.util.exception.NotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.JsonParseException;
@@ -29,7 +31,8 @@ public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
     ObjectMapper objectMapper;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         try {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
@@ -38,16 +41,29 @@ public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
                 log.error(notFoundException.getMessage());
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter().write(objectMapper.writeValueAsString(new ExceptionBody(notFoundException.getMessage())));
+                response.getWriter()
+                        .write(objectMapper.writeValueAsString(new ExceptionBody(notFoundException.getMessage())));
                 return;
             }
-            if (e instanceof JsonParseException jsonParseException) {
-                log.error(jsonParseException.getMessage());
+
+            if (e instanceof JsonParseException || e instanceof BadRequestException) {
+                log.error(e.getMessage());
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter().write(objectMapper.writeValueAsString(new ExceptionBody(jsonParseException.getMessage())));
+                response.getWriter().write(objectMapper.writeValueAsString(new ExceptionBody(e.getMessage())));
                 return;
             }
+
+            if (e instanceof ForbiddenException forbiddenException) {
+                log.error(forbiddenException.getMessage());
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.getWriter()
+                        .write(objectMapper.writeValueAsString(new ExceptionBody(forbiddenException.getMessage())));
+                return;
+            }
+
+
             log.error("Custom error Spring Security Filter Chain Exception:", e);
             if (handlerExceptionResolver.resolveException(request, response, null, e) == null) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -71,4 +71,33 @@ public class JwtRedisService {
         }
         throw new BadRequestException("Key is expire. Please log back into your account");
     }
+
+
+    // todo для добавление девайса в redis
+    public void logoutAll(Long id) {
+        String pattern = id + "::*";
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
+    }
+
+    public void logoutOthers(JwtToken jwtToken) {
+        String pattern = jwtToken.id() + "::*";
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys == null || keys.isEmpty()) {
+            throw new RuntimeException("Inner server error. Poor synchronization with Redis");
+        }
+
+        keys.stream()
+                .filter(k -> {
+                    String[] parts = k.split("::", 2);
+                    return parts.length == 2 && !parts[1].equals(jwtToken.jti());
+                })
+                .forEach(redisTemplate::delete);
+    }
+
+    public void updateJtiByTime() {
+        //todo
+    }
 }

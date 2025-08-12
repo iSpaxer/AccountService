@@ -2,7 +2,6 @@ package com.example.controller.edvice;
 
 import com.example.dto.ExceptionBody;
 import com.example.util.exception.BadRequestException;
-import com.example.util.exception.BusinessException;
 import com.example.util.exception.ForbiddenException;
 import com.example.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -141,12 +140,6 @@ public class RestControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ExceptionBody(message));
-    }
-
-
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<?> handleBusinessException(BusinessException ex) {
-        return ex.getResponseEntity();
     }
 
     @ApiResponse(responseCode = "500")

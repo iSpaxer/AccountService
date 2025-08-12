@@ -1,6 +1,6 @@
 package com.example.security.filter;
 
-import com.example.dto.jwt.JwtToken;
+import com.example.security.DefaultAuthenticationPrincipal;
 import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
 import com.example.util.exception.BadRequestException;
@@ -28,7 +28,7 @@ public class JwtLogoutFilter extends OncePerRequestFilter {
     public JwtLogoutFilter(ApplicationDataComponent dataComponent, JwtRedisService jwtRedisService) {
         this.dataComponent = dataComponent;
         this.jwtRedisService = jwtRedisService;
-        this.requestMatcher = new AntPathRequestMatcher(this.dataComponent.glueEndpoint("/jwt/login"),
+        this.requestMatcher = new AntPathRequestMatcher(this.dataComponent.glueEndpoint("/jwt/logout"),
                                                         HttpMethod.POST.name());
 
     }
@@ -41,8 +41,8 @@ public class JwtLogoutFilter extends OncePerRequestFilter {
             SecurityContext context = SecurityContextHolder.getContext();
             if (context != null && context.getAuthentication() != null) {
                 Authentication authentication = context.getAuthentication();
-                if (authentication.getPrincipal() instanceof JwtToken jwtToken) {
-                    jwtRedisService.logout(jwtToken);
+                if (authentication.getPrincipal() instanceof DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
+                    jwtRedisService.logout(defaultAuthenticationPrincipal.getToken());
                     response.setStatus(HttpStatus.OK.value());
                     return;
                 }
