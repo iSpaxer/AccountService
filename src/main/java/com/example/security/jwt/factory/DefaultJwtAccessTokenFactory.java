@@ -13,18 +13,18 @@ import java.util.LinkedList;
  */
 public class DefaultJwtAccessTokenFactory implements JwtAccessTokenFactory {
 
-    Duration tokenTtl = Duration.ofMinutes(5);
+    private final Duration tokenTtl = Duration.ofMinutes(5);
 
     @Override
-    public JwtToken apply(JwtToken token) {
+    public JwtToken apply(JwtToken refreshToken) {
         var authorities = new LinkedList<String>();
-        token.authorities()
+        refreshToken.authorities()
                 .stream()
                 .filter(authority -> authority.startsWith(SecureStatic.PREFIX_FOR_AUTHORITIES))
                 .map(authority -> authority.substring(SecureStatic.PREFIX_FOR_AUTHORITIES.length()))
                 .forEach(authorities::add);
         var now = Instant.now();
-        return new JwtToken(token.id(), authorities, now, now.plus(tokenTtl));
+        return new JwtToken(refreshToken.id(), refreshToken.jti(), authorities, now, now.plus(tokenTtl));
     }
 
 }

@@ -6,7 +6,9 @@ import com.example.security.jwt.deserializer.RefreshTokenJweDeserializer;
 import com.example.security.jwt.factory.*;
 import com.example.security.jwt.serializer.AccessTokenJwsSerializer;
 import com.example.security.jwt.serializer.RefreshTokenJweSerializer;
+import com.example.service.JwtRedisService;
 import com.example.util.ApplicationDataComponent;
+import com.example.util.exception.entrypoint.ForbiddenEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.DirectDecrypter;
@@ -48,14 +50,16 @@ public class JwtCommonConfig {
     }
 
     @Bean
-    public AuthenticationJwtResponseMapper authenticationJwtResponseMapper() {
+    public AuthenticationJwtResponseMapper authenticationJwtResponseMapper(JwtRedisService jwtRedisService) {
         return AuthenticationJwtResponseMapper.builder()
                 .jwtRefreshFactory(jwtRefreshTokenFactory)
                 .jwtAccessFactory(jwtAccessTokenFactory)
                 .accessTokenSerializer(accessTokenJwsSerializer)
                 .refreshTokenSerializer(refreshTokenJweSerializer)
+                .jwtRedisService(jwtRedisService)
                 .build();
     }
+
 
     @Bean
     public JwtAuthenticationConfigurer jwtAuthenticationConfigurer(
@@ -64,7 +68,9 @@ public class JwtCommonConfig {
             HandlerExceptionResolver handlerExceptionResolver,
             ObjectMapper objectMapper,
             ApplicationDataComponent applicationDataComponent,
-            AuthenticationJwtResponseMapper authenticationJwtResponseMapper) {
+            AuthenticationJwtResponseMapper authenticationJwtResponseMapper,
+            JwtRedisService jwtRedisService,
+            ForbiddenEntryPoint forbiddenEntryPoint) {
         return new JwtAuthenticationConfigurer(
                 jwtUserDetailsService,
                 passwordEncoder,
@@ -77,7 +83,9 @@ public class JwtCommonConfig {
                 handlerExceptionResolver,
                 objectMapper,
                 applicationDataComponent,
-                authenticationJwtResponseMapper
+                authenticationJwtResponseMapper,
+                jwtRedisService,
+                forbiddenEntryPoint
         );
     }
 

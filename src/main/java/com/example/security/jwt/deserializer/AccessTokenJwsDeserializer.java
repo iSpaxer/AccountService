@@ -32,6 +32,7 @@ public class AccessTokenJwsDeserializer implements Function<String, JwtToken> {
                 var jwtClaimsSet = signedJWT.getJWTClaimsSet();
                 return new JwtToken(
                         jwtClaimsSet.getLongClaim("id"),
+                        jwtClaimsSet.getJWTID(),
                         jwtClaimsSet.getStringListClaim("authorities"),
                         jwtClaimsSet.getIssueTime().toInstant(),
                         jwtClaimsSet.getExpirationTime().toInstant()

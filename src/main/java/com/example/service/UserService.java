@@ -17,17 +17,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final EntityMapper mapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtRedisService jwtRedisService;
+
+    public static String generateJti() {
+        return UUID.randomUUID().toString();
+    }
 
     @Autowired
-    public UserService(UserRepository repository, EntityMapper mapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, EntityMapper mapper, PasswordEncoder passwordEncoder,
+                       JwtRedisService jwtRedisService) {
         this.userRepository = repository;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
+        this.jwtRedisService = jwtRedisService;
     }
 
     @Transactional
@@ -51,6 +60,7 @@ public class UserService {
     @Transactional
     public UserDto updateUser(UserDto dto, DefaultAuthenticationPrincipal defaultAuthenticationPrincipal) {
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            jwtRedisService.logoutOthers(defaultAuthenticationPrincipal.getToken());
             dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
         var entity = userRepository.findByIdAndStatus(defaultAuthenticationPrincipal.getId(),
@@ -81,13 +91,14 @@ public class UserService {
             throw new OptimisticLockException(
                     "Optimistic lock occurred for user with id: " + defaultAuthenticationPrincipal.getId());
         }
+        jwtRedisService.logoutAll(defaultAuthenticationPrincipal.getId());
     }
 
 
     public JwtUserDetails getUserDetailsByUsername(String username) {
         var user = getByUsername(username);
 
-        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword());
+        return new JwtUserDetails(user.getId(), user.getUsername(), user.getPassword(), generateJti());
     }
 
     @Transactional(readOnly = true)
@@ -100,5 +111,6 @@ public class UserService {
         return userRepository.findByUsernameAndStatus(username, StatusType.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
     }
+
 
 }

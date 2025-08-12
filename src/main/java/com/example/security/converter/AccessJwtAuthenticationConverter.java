@@ -1,10 +1,9 @@
 package com.example.security.converter;
 
 import com.example.dto.jwt.JwtToken;
+import com.example.service.JwtRedisService;
+import com.example.util.exception.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationConverter;
@@ -13,25 +12,38 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import java.util.function.Function;
 
 
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AccessJwtAuthenticationConverter implements AuthenticationConverter {
 
-    Function<String, JwtToken> accessTokenStringDeserializer;
+    private final Function<String, JwtToken> accessTokenStringDeserializer;
 
-    Function<String, JwtToken> refreshTokenStringDeserializer;
+    private final Function<String, JwtToken> refreshTokenStringDeserializer;
+
+    private final JwtRedisService jwtRedisService;
+
+    public AccessJwtAuthenticationConverter(Function<String, JwtToken> accessTokenStringDeserializer,
+                                            Function<String, JwtToken> refreshTokenStringDeserializer,
+                                            JwtRedisService jwtRedisService) {
+        this.accessTokenStringDeserializer = accessTokenStringDeserializer;
+        this.refreshTokenStringDeserializer = refreshTokenStringDeserializer;
+        this.jwtRedisService = jwtRedisService;
+    }
+
 
     @Override
     public Authentication convert(HttpServletRequest request) {
-        var authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorization != null && authorization.startsWith("Bearer ")) {
-            var token = authorization.replace("Bearer ", "");
-            var accessToken = this.accessTokenStringDeserializer.apply(token);
+            String token = authorization.replace("Bearer ", "");
+            JwtToken accessToken = this.accessTokenStringDeserializer.apply(token);
             if (accessToken != null) {
-                return new PreAuthenticatedAuthenticationToken(accessToken, token);
+                if (jwtRedisService.checkForAccess(accessToken)) {
+                    return new PreAuthenticatedAuthenticationToken(accessToken, token);
+                } else {
+                    throw new ForbiddenException("Jwt not valid");
+                }
             }
 
-            var refreshToken = this.refreshTokenStringDeserializer.apply(token);
+            JwtToken refreshToken = this.refreshTokenStringDeserializer.apply(token);
             if (refreshToken != null) {
                 return new PreAuthenticatedAuthenticationToken(refreshToken, token);
             }

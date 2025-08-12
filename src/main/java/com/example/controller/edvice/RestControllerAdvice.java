@@ -2,7 +2,7 @@ package com.example.controller.edvice;
 
 import com.example.dto.ExceptionBody;
 import com.example.util.exception.BadRequestException;
-import com.example.util.exception.BusinessException;
+import com.example.util.exception.ForbiddenException;
 import com.example.util.exception.NotFoundException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.OptimisticLockException;
@@ -89,6 +89,12 @@ public class RestControllerAdvice {
                 .body(new ExceptionBody("Bad request! " + ex.getMessage()));
     }
 
+    @ApiResponse(responseCode = "403")
+    public ResponseEntity<ExceptionBody> handleForbiddenException(ForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ExceptionBody("Access is denied!" + ex.getMessage()));
+    }
+
     @ApiResponse(responseCode = "404")
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ExceptionBody> handleNotFound(NoResourceFoundException ex) {
@@ -134,12 +140,6 @@ public class RestControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ExceptionBody(message));
-    }
-
-
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<?> handleBusinessException(BusinessException ex) {
-        return ex.getResponseEntity();
     }
 
     @ApiResponse(responseCode = "500")

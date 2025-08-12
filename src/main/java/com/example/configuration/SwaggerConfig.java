@@ -19,6 +19,9 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Collections;
+import java.util.List;
+
 @Configuration
 public class SwaggerConfig {
 
@@ -69,8 +72,9 @@ public class SwaggerConfig {
             openApi
                     .path(dataComponent.glueEndpoint("/jwt/login"), new PathItem()
                             .post(new Operation()
-                                          .summary("Вход в админ панель.")
-                                          .addTagsItem("Admin")
+                                          .summary("Вход в аккаунт с логин и паролем.")
+                                          .security(Collections.emptyList())
+                                          .addTagsItem("account-controller")
                                           .requestBody(new RequestBody()
                                                                .content(new Content().addMediaType(
                                                                                 org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
@@ -92,11 +96,34 @@ public class SwaggerConfig {
                                                              .addApiResponse("500", new ApiResponse()
                                                                      .description("INNER SERVER ERROR"))
                                           )
-                            ))
+                            )
+                    )
+                    .path(dataComponent.glueEndpoint("/jwt/logout"), new PathItem()
+                            .post(new Operation()
+                                          .summary("Выйти из аккаунта")
+                                          .addTagsItem("account-controller")
+                                          .security(List.of(new SecurityRequirement().addList("JWT")))
+                                          .responses(new ApiResponses()
+                                                             .addApiResponse("200", new ApiResponse()
+                                                                     .description("Successful logout!")
+                                                                     .content(new Content().addMediaType(
+                                                                             org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                                                                             new MediaType().schema(
+                                                                                     new Schema<String>().example(
+                                                                                             "Logout successful")))))
+                                                             .addApiResponse("400", new ApiResponse()
+                                                                     .description("Bad request"))
+                                                             .addApiResponse("403", new ApiResponse()
+                                                                     .description("Forbidden"))
+                                                             .addApiResponse("500", new ApiResponse()
+                                                                     .description("INNER SERVER ERROR"))
+                                          )
+                            )
+                    )
                     .path(dataComponent.glueEndpoint("/jwt/refresh"), new PathItem()
                             .post(new Operation()
                                           .summary("Получить новый access и refresh токен.")
-                                          .addTagsItem("Admin")
+                                          .addTagsItem("account-controller")
                                           .requestBody(new RequestBody()
                                                                .content(new Content().addMediaType(
                                                                                 org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
@@ -120,8 +147,8 @@ public class SwaggerConfig {
                                                              .addApiResponse("500", new ApiResponse()
                                                                      .description("INNER SERVER ERROR"))
                                           )
-                            ));
-
+                            )
+                    );
         });
         builder.packagesToScan("com.example.controller");
         builder.addOpenApiCustomizer(openApi -> openApi.info(new Info().title("Admins API").version("1.0.0")));
